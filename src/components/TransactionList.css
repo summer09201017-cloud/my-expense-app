@@ -1,0 +1,149 @@
+.transaction-list {
+    animation-delay: 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state .sub-text {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    opacity: 0.8;
+}
+
+.list-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.transaction-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.type-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.type-badge.income {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--income-color);
+}
+
+.type-badge.expense {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--expense-color);
+}
+
+.item-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-category {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+}
+
+.item-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+}
+
+.item-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.item-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.item-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.item-amount.income {
+    color: var(--income-color);
+}
+
+.item-amount.expense {
+    color: var(--text-primary);
+}
+
+.item-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.2rem;
+}
+
+.delete-btn {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    color: var(--expense-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .transaction-item {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .transaction-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+}

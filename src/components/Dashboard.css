@@ -1,0 +1,97 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+}
+
+.balance-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.balance-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.icon-main {
+    width: 24px;
+    height: 24px;
+}
+
+.balance-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    margin: 0;
+}
+
+.stats-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.stat-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.stat-icon-wrapper {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-income {
+    color: #10b981;
+    width: 20px;
+    height: 20px;
+}
+
+.icon-expense {
+    color: #ef4444;
+    width: 20px;
+    height: 20px;
+}
+
+.stat-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+@media (max-width: 400px) {
+    .stats-row {
+        flex-direction: column;
+    }
+}
