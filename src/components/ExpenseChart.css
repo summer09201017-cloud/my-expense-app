@@ -1,0 +1,29 @@
+.expense-chart {
+    animation-delay: 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.chart-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 確保 svg 動畫順暢 */
+.recharts-wrapper {
+    transition: all 0.3s ease;
+}
+
+.recharts-pie-sector:focus {
+    outline: none;
+}

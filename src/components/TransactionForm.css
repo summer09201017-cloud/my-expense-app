@@ -139,6 +139,52 @@
     transform: translateY(0);
 }
 
+.edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-color);
+    padding: 0.75rem 1rem;
+    border-radius: calc(var(--border-radius) - 0.5rem);
+    font-weight: 600;
+}
+
+.cancel-edit-btn {
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-edit-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--expense-color);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.cancel-btn {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+    padding: 1rem;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
 
@@ -159,4 +205,93 @@
     .toggle-btn:hover {
         background: rgba(255, 255, 255, 0.02);
     }
+}
+
+/* Category Chips Styles */
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.8rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.category-chip:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.category-chip.selected {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.delete-category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: currentColor;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  border-radius: 50%;
+  margin-left: 0.2rem;
+}
+
+.delete-category-btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.category-chip:not(:hover) .delete-category-btn {
+  opacity: 0;
+}
+
+@media (max-width: 640px) {
+  .category-chip:not(:hover) .delete-category-btn {
+    opacity: 0.5;
+  }
+}
+
+.category-chip.add-btn {
+  border-style: dashed;
+  background-color: transparent;
+}
+
+.category-chip.add-btn:hover {
+  background-color: var(--bg-primary);
+}
+
+.category-chip.adding {
+  padding: 0;
+  border-color: var(--accent-color);
+  overflow: hidden;
+}
+
+.category-chip.adding input {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  width: 80px;
+  color: var(--text-primary);
+  outline: none;
 }

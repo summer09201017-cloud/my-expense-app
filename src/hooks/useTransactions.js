@@ -43,6 +43,20 @@ export const useTransactions = () => {
         setTransactions(prev => prev.filter(t => t.id !== id));
     };
 
+    // 更新交易
+    const updateTransaction = (id, updatedData) => {
+        setTransactions(prev => prev.map(t =>
+            t.id === id ? { ...t, ...updatedData } : t
+        ));
+    };
+
+    // 從雲端還原（覆蓋）所有交易
+    const restoreTransactions = (data) => {
+        if (Array.isArray(data)) {
+            setTransactions(data);
+        }
+    };
+
     // 計算結餘
     const summary = transactions.reduce(
         (acc, curr) => {
@@ -62,6 +76,8 @@ export const useTransactions = () => {
         transactions,
         addTransaction,
         deleteTransaction,
+        updateTransaction,
+        restoreTransactions,
         summary
     };
 };
