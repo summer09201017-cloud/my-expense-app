@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, MinusCircle, X } from 'lucide-react';
+import { PlusCircle, MinusCircle, X, Repeat, Check } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import './TransactionForm.css';
+
+const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
 
 export function TransactionForm({ onAdd, editingTransaction, prefillTransaction, onUpdate, onCancelEdit, onConsumePrefill }) {
     const [type, setType] = useState('expense');
@@ -9,10 +11,16 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
     const [category, setCategory] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [note, setNote] = useState('');
+    const [continuousMode, setContinuousMode] = useState(() => localStorage.getItem('continuous_mode') === '1');
+    const [justSaved, setJustSaved] = useState(false);
 
     const { categories, addCategory, deleteCategory } = useCategories();
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
+
+    useEffect(() => {
+        localStorage.setItem('continuous_mode', continuousMode ? '1' : '0');
+    }, [continuousMode]);
 
     // 當傳入 editingTransaction 時，將表單內容設為該筆紀錄
     useEffect(() => {
@@ -80,11 +88,19 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
             onCancelEdit();
         } else {
             onAdd({ type, amount: Number(amount), category, date, note });
-            // 重設表單
-            setAmount('');
-            setCategory('');
-            setNote('');
+            // 連續模式：保留 type / category / date，僅清空金額與備註
+            if (continuousMode) {
+                setAmount('');
+                setNote('');
+            } else {
+                setAmount('');
+                setCategory('');
+                setNote('');
+            }
             if (prefillTransaction && onConsumePrefill) onConsumePrefill();
+            // 短暫顯示「已新增」提示
+            setJustSaved(true);
+            setTimeout(() => setJustSaved(false), 1200);
         }
     };
 
@@ -127,6 +143,29 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                     className="amount-input"
                     inputMode="decimal"
                 />
+            </div>
+
+            <div className="quick-amounts">
+                {QUICK_AMOUNTS.map(n => (
+                    <button
+                        type="button"
+                        key={n}
+                        className="quick-amount-chip"
+                        onClick={() => setAmount(String(n))}
+                    >
+                        ${n}
+                    </button>
+                ))}
+                {amount && (
+                    <button
+                        type="button"
+                        className="quick-amount-chip clear"
+                        onClick={() => setAmount('')}
+                        title="清除金額"
+                    >
+                        清除
+                    </button>
+                )}
             </div>
 
             <div className="form-row">
@@ -216,14 +255,26 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                 />
             </div>
 
+            {!editingTransaction && (
+                <label className={`continuous-toggle ${continuousMode ? 'active' : ''}`} title="開啟後送出仍保留分類與日期，方便連續輸入">
+                    <input
+                        type="checkbox"
+                        checked={continuousMode}
+                        onChange={(e) => setContinuousMode(e.target.checked)}
+                    />
+                    <Repeat size={14} />
+                    <span>連續記帳模式</span>
+                </label>
+            )}
+
             <div className="form-actions">
                 {editingTransaction && (
                     <button type="button" onClick={onCancelEdit} className="cancel-btn">
                         取消
                     </button>
                 )}
-                <button type="submit" className="submit-btn" style={{ flex: 1 }}>
-                    {editingTransaction ? '儲存修改' : '新增紀錄'}
+                <button type="submit" className={`submit-btn ${justSaved ? 'saved' : ''}`} style={{ flex: 1 }}>
+                    {justSaved ? <><Check size={18} /> 已新增</> : (editingTransaction ? '儲存修改' : '新增紀錄')}
                 </button>
             </div>
         </form>

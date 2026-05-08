@@ -126,8 +126,17 @@
     font-size: 1.1rem;
     font-weight: 600;
     box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
     margin-top: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.submit-btn.saved {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
 }
 
 .submit-btn:hover {
@@ -137,6 +146,73 @@
 
 .submit-btn:active {
     transform: translateY(0);
+}
+
+/* 快速金額快捷鍵 */
+.quick-amounts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: -0.5rem;
+}
+
+.quick-amount-chip {
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.quick-amount-chip:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.quick-amount-chip.clear {
+    background: transparent;
+    color: var(--expense-color);
+}
+
+.quick-amount-chip.clear:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--expense-color);
+    transform: none;
+}
+
+/* 連續模式 toggle */
+.continuous-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    align-self: flex-start;
+    transition: all 0.2s ease;
+}
+
+.continuous-toggle input {
+    accent-color: var(--accent-color);
+    margin: 0;
+    cursor: pointer;
+}
+
+.continuous-toggle:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.continuous-toggle.active {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--accent-color);
 }
 
 .edit-header {

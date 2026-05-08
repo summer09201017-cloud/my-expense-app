@@ -57,6 +57,25 @@ export const useTransactions = () => {
         }
     };
 
+    // 合併匯入：依 id 去重；無 id 視為新資料
+    const mergeTransactions = (data) => {
+        if (!Array.isArray(data)) return 0;
+        let added = 0;
+        setTransactions(prev => {
+            const seen = new Set(prev.map(t => t.id));
+            const incoming = data.filter(t => {
+                if (!t || typeof t !== 'object') return false;
+                if (t.id && seen.has(t.id)) return false;
+                if (t.id) seen.add(t.id);
+                return true;
+            });
+            added = incoming.length;
+            const merged = [...incoming, ...prev];
+            return merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+        });
+        return added;
+    };
+
     // 計算結餘：balance 為全部歷史總和；income/expense 僅本月
     const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
     const summary = transactions.reduce(
@@ -80,6 +99,7 @@ export const useTransactions = () => {
         deleteTransaction,
         updateTransaction,
         restoreTransactions,
+        mergeTransactions,
         summary
     };
 };
