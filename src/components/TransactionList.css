@@ -219,7 +219,8 @@
 }
 
 .delete-btn,
-.edit-btn {
+.edit-btn,
+.copy-btn {
     color: var(--text-secondary);
     opacity: 0.5;
     padding: 0.5rem;
@@ -237,6 +238,12 @@
     opacity: 1;
     color: var(--accent-color);
     background: rgba(59, 130, 246, 0.1);
+}
+
+.copy-btn:hover {
+    opacity: 1;
+    color: var(--income-color);
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .search-wrapper {

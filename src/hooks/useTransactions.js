@@ -57,15 +57,17 @@ export const useTransactions = () => {
         }
     };
 
-    // 計算結餘
+    // 計算結餘：balance 為全部歷史總和；income/expense 僅本月
+    const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
     const summary = transactions.reduce(
         (acc, curr) => {
+            const isCurrentMonth = curr.date && curr.date.startsWith(currentMonth);
             if (curr.type === 'income') {
-                acc.income += curr.amount;
                 acc.balance += curr.amount;
+                if (isCurrentMonth) acc.income += curr.amount;
             } else {
-                acc.expense += curr.amount;
                 acc.balance -= curr.amount;
+                if (isCurrentMonth) acc.expense += curr.amount;
             }
             return acc;
         },

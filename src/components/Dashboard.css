@@ -90,6 +90,123 @@
     font-weight: 600;
 }
 
+/* 預算區塊 */
+.budget-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    padding: 0.85rem 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.budget-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.budget-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.15s ease;
+}
+
+.budget-edit-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.budget-edit {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.budget-input {
+    width: 110px;
+    padding: 0.3rem 0.5rem;
+    border: none;
+    border-radius: 0.4rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.budget-icon-btn {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.4rem;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.budget-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.budget-bar {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.budget-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+}
+
+.budget-bar.ok .budget-bar-fill {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.budget-bar.warn .budget-bar-fill {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.budget-bar.danger .budget-bar-fill {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    animation: pulse-danger 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.budget-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
 @media (max-width: 400px) {
     .stats-row {
         flex-direction: column;

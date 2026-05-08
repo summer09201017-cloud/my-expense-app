@@ -3,13 +3,13 @@ import { PlusCircle, MinusCircle, X } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import './TransactionForm.css';
 
-export function TransactionForm({ onAdd, editingTransaction, onUpdate, onCancelEdit }) {
+export function TransactionForm({ onAdd, editingTransaction, prefillTransaction, onUpdate, onCancelEdit, onConsumePrefill }) {
     const [type, setType] = useState('expense');
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [note, setNote] = useState('');
-    
+
     const { categories, addCategory, deleteCategory } = useCategories();
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
@@ -31,6 +31,17 @@ export function TransactionForm({ onAdd, editingTransaction, onUpdate, onCancelE
             setNote('');
         }
     }, [editingTransaction]);
+
+    // 處理「複製此筆」prefill：載入但不進入編輯狀態
+    useEffect(() => {
+        if (prefillTransaction) {
+            setType(prefillTransaction.type);
+            setAmount(prefillTransaction.amount);
+            setCategory(prefillTransaction.category);
+            setDate(prefillTransaction.date);
+            setNote(prefillTransaction.note || '');
+        }
+    }, [prefillTransaction]);
 
     // 當切換收支類型時，如果目前選擇的類別不在新類型的列表中，則清空選擇
     useEffect(() => {
@@ -73,6 +84,7 @@ export function TransactionForm({ onAdd, editingTransaction, onUpdate, onCancelE
             setAmount('');
             setCategory('');
             setNote('');
+            if (prefillTransaction && onConsumePrefill) onConsumePrefill();
         }
     };
 
@@ -122,8 +134,8 @@ export function TransactionForm({ onAdd, editingTransaction, onUpdate, onCancelE
                     <label>分類</label>
                     <div className="category-chips">
                         {categories[type].map(cat => (
-                            <div 
-                                key={cat} 
+                            <div
+                                key={cat}
                                 className={`category-chip ${category === cat ? 'selected' : ''}`}
                                 onClick={() => setCategory(cat)}
                             >
@@ -171,8 +183,8 @@ export function TransactionForm({ onAdd, editingTransaction, onUpdate, onCancelE
                                 />
                             </div>
                         ) : (
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="category-chip add-btn"
                                 onClick={() => setIsAddingCategory(true)}
                             >

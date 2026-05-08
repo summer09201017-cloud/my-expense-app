@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Trash2, Edit2, Calendar, Search } from 'lucide-react';
+import { Trash2, Edit2, Calendar, Search, Copy } from 'lucide-react';
 import './TransactionList.css';
 
-export function TransactionList({ transactions, onDelete, onEdit }) {
+export function TransactionList({ transactions, onDelete, onEdit, onCopy }) {
     const [viewMode, setViewMode] = useState('day'); // 'day' 或是 'month'
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7)); // 'YYYY-MM'
@@ -158,6 +158,13 @@ export function TransactionList({ transactions, onDelete, onEdit }) {
                                     </div>
 
                                     <div className="item-actions">
+                                        <button
+                                            onClick={() => onCopy(t)}
+                                            className="copy-btn"
+                                            title="複製此筆（再記一筆相同）"
+                                        >
+                                            <Copy size={18} />
+                                        </button>
                                         <button
                                             onClick={() => onEdit(t)}
                                             className="edit-btn"
