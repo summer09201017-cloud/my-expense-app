@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toLocalMonthString } from '../utils/date';
 
 // 預設產生一筆展示資料，或者回傳空陣列
 const getInitialTransactions = () => {
@@ -40,7 +41,9 @@ export const useTransactions = () => {
 
     // 刪除交易
     const deleteTransaction = (id) => {
+        const deleted = transactions.find(t => t.id === id);
         setTransactions(prev => prev.filter(t => t.id !== id));
+        return deleted || null;
     };
 
     // 更新交易
@@ -77,7 +80,7 @@ export const useTransactions = () => {
     };
 
     // 計算結餘：balance 為全部歷史總和；income/expense 僅本月
-    const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+    const currentMonth = toLocalMonthString(); // YYYY-MM
     const summary = transactions.reduce(
         (acc, curr) => {
             const isCurrentMonth = curr.date && curr.date.startsWith(currentMonth);

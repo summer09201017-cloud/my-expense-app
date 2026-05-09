@@ -210,7 +210,7 @@ export function CalendarView({ transactions, onDelete, onEdit, onCopy }) {
                                     <div className="cal-item-actions">
                                         <button type="button" onClick={() => onCopy(t)} title="複製">⧉</button>
                                         <button type="button" onClick={() => onEdit(t)} title="編輯">✎</button>
-                                        <button type="button" onClick={() => { if (window.confirm('確定刪除這筆紀錄？')) onDelete(t.id); }} title="刪除">
+                                        <button type="button" onClick={() => onDelete(t.id)} title="刪除">
                                             <X size={14} />
                                         </button>
                                     </div>

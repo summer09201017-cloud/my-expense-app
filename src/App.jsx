@@ -1,7 +1,12 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { Download, Monitor, Moon, Smartphone, Sun, Upload } from 'lucide-react';
 import { useTransactions } from './hooks/useTransactions';
 import { useTheme } from './hooks/useTheme';
 import { useBudget } from './hooks/useBudget';
+import { useCategories } from './hooks/useCategories';
+import { useCategoryBudgets } from './hooks/useCategoryBudgets';
+import { useRecurringTransactions } from './hooks/useRecurringTransactions';
+import { usePwaInstall } from './hooks/usePwaInstall';
 import { Dashboard } from './components/Dashboard';
 import { ExpenseChart } from './components/ExpenseChart';
 import { TrendChart } from './components/TrendChart';
@@ -10,30 +15,61 @@ import { TransactionList } from './components/TransactionList';
 import { CalendarView } from './components/CalendarView';
 import { ReportView } from './components/ReportView';
 import { CloudSync } from './components/CloudSync';
+import { SettingsView } from './components/SettingsView';
 import { TabBar } from './components/TabBar';
-import { Download, Upload, Sun, Moon, Monitor } from 'lucide-react';
 import { csvToTransactions } from './utils/csv';
+import { getCategorySpending, getMoneyInsights } from './utils/financeStats';
+import { localDateForMonthDay, toLocalDateString, toLocalMonthString } from './utils/date';
 
 function App() {
     const { transactions, addTransaction, deleteTransaction, updateTransaction, restoreTransactions, mergeTransactions, summary } = useTransactions();
-    const { theme, cycleTheme } = useTheme();
+    const { theme, setTheme, cycleTheme } = useTheme();
     const { budget, setBudget } = useBudget();
+    const categoriesState = useCategories();
+    const { categoryBudgets, setCategoryBudget } = useCategoryBudgets();
+    const {
+        recurringRules,
+        addRecurringRule,
+        updateRecurringRule,
+        deleteRecurringRule,
+        markRecurringPosted,
+    } = useRecurringTransactions();
+    const pwa = usePwaInstall();
+
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [prefillTransaction, setPrefillTransaction] = useState(null);
     const [activeTab, setActiveTab] = useState('add');
+    const [undoDelete, setUndoDelete] = useState(null);
+    const undoTimerRef = useRef(null);
     const fileInputRef = useRef(null);
 
     const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
     const themeLabel = theme === 'light' ? '淺色' : theme === 'dark' ? '深色' : '系統';
+    const currentMonth = toLocalMonthString();
+    const today = toLocalDateString();
 
-    // 從其他分頁觸發複製：跳到記帳分頁並預填
+    const categorySpending = useMemo(
+        () => getCategorySpending(transactions, currentMonth),
+        [transactions, currentMonth]
+    );
+    const moneyInsights = useMemo(
+        () => getMoneyInsights(transactions, budget),
+        [transactions, budget]
+    );
+    const dueRecurringRules = useMemo(() => {
+        return recurringRules.filter((rule) => {
+            if (!rule.enabled || rule.lastPostedMonth === currentMonth) return false;
+            return localDateForMonthDay(currentMonth, rule.dayOfMonth) <= today;
+        });
+    }, [recurringRules, currentMonth, today]);
+
     const handleCopy = (transaction) => {
         setEditingTransaction(null);
         setPrefillTransaction({
             type: transaction.type,
             amount: transaction.amount,
             category: transaction.category,
-            date: new Date().toISOString().split('T')[0],
+            date: toLocalDateString(),
             note: transaction.note || '',
             _ts: Date.now(),
         });
@@ -46,6 +82,36 @@ function App() {
         setEditingTransaction(transaction);
         setActiveTab('add');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDelete = (id) => {
+        const target = transactions.find((transaction) => transaction.id === id);
+        if (!target) return;
+        if (!window.confirm(`確定刪除「${target.category} ${target.amount}」這筆紀錄？`)) return;
+
+        const deleted = deleteTransaction(id);
+        if (!deleted) return;
+        window.clearTimeout(undoTimerRef.current);
+        setUndoDelete(deleted);
+        undoTimerRef.current = window.setTimeout(() => setUndoDelete(null), 7000);
+    };
+
+    const handleUndoDelete = () => {
+        if (!undoDelete) return;
+        mergeTransactions([undoDelete]);
+        window.clearTimeout(undoTimerRef.current);
+        setUndoDelete(null);
+    };
+
+    const handlePostRecurring = (rule) => {
+        addTransaction({
+            type: rule.type,
+            amount: rule.amount,
+            category: rule.category,
+            date: localDateForMonthDay(currentMonth, rule.dayOfMonth),
+            note: rule.note || '',
+        });
+        markRecurringPosted(rule.id, currentMonth);
     };
 
     const handleImportCSV = async (e) => {
@@ -97,53 +163,79 @@ function App() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `expense_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('download', `expense_export_${toLocalDateString()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     return (
         <>
             <header className="app-toolbar">
-                <button
-                    onClick={cycleTheme}
-                    className="toolbar-btn"
-                    title={`目前：${themeLabel}模式（點擊切換）`}
-                >
-                    <ThemeIcon size={16} />
-                    <span className="toolbar-label">{themeLabel}</span>
-                </button>
-                <CloudSync transactions={transactions} onRestore={restoreTransactions} />
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv,text/csv"
-                    onChange={handleImportCSV}
-                    style={{ display: 'none' }}
-                />
-                <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="toolbar-btn"
-                    title="匯入 CSV"
-                >
-                    <Upload size={16} />
-                    <span className="toolbar-label">匯入</span>
-                </button>
-                <button
-                    onClick={exportToCSV}
-                    className="toolbar-btn"
-                    title="匯出 CSV"
-                >
-                    <Download size={16} />
-                    <span className="toolbar-label">匯出</span>
-                </button>
+                <div className="toolbar-title">
+                    <strong>隨身記帳本</strong>
+                    <span>PWA</span>
+                </div>
+                <div className="toolbar-actions">
+                    {pwa.canInstall && !pwa.isStandalone && (
+                        <button
+                            onClick={pwa.install}
+                            className="toolbar-btn install-toolbar-btn"
+                            title="安裝成 PWA"
+                        >
+                            <Smartphone size={16} />
+                            <span className="toolbar-label">安裝</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={cycleTheme}
+                        className="toolbar-btn"
+                        title={`目前：${themeLabel}模式（點擊切換）`}
+                    >
+                        <ThemeIcon size={16} />
+                        <span className="toolbar-label">{themeLabel}</span>
+                    </button>
+                    <CloudSync transactions={transactions} onRestore={restoreTransactions} />
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv,text/csv"
+                        onChange={handleImportCSV}
+                        style={{ display: 'none' }}
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="toolbar-btn"
+                        title="匯入 CSV"
+                    >
+                        <Upload size={16} />
+                        <span className="toolbar-label">匯入</span>
+                    </button>
+                    <button
+                        onClick={exportToCSV}
+                        className="toolbar-btn"
+                        title="匯出 CSV"
+                    >
+                        <Download size={16} />
+                        <span className="toolbar-label">匯出</span>
+                    </button>
+                </div>
             </header>
 
             <main className="app-main">
                 {activeTab === 'add' && (
                     <>
-                        <Dashboard summary={summary} budget={budget} onBudgetChange={setBudget} />
+                        <Dashboard
+                            summary={summary}
+                            budget={budget}
+                            onBudgetChange={setBudget}
+                            categoryBudgets={categoryBudgets}
+                            categorySpending={categorySpending}
+                            moneyInsights={moneyInsights}
+                            dueRecurringRules={dueRecurringRules}
+                            onPostRecurring={handlePostRecurring}
+                        />
                         <TransactionForm
                             onAdd={addTransaction}
                             editingTransaction={editingTransaction}
@@ -151,6 +243,7 @@ function App() {
                             onUpdate={updateTransaction}
                             onCancelEdit={() => setEditingTransaction(null)}
                             onConsumePrefill={() => setPrefillTransaction(null)}
+                            categoriesState={categoriesState}
                         />
                     </>
                 )}
@@ -158,7 +251,7 @@ function App() {
                 {activeTab === 'list' && (
                     <TransactionList
                         transactions={transactions}
-                        onDelete={deleteTransaction}
+                        onDelete={handleDelete}
                         onCopy={handleCopy}
                         onEdit={handleEdit}
                     />
@@ -167,7 +260,7 @@ function App() {
                 {activeTab === 'calendar' && (
                     <CalendarView
                         transactions={transactions}
-                        onDelete={deleteTransaction}
+                        onDelete={handleDelete}
                         onEdit={handleEdit}
                         onCopy={handleCopy}
                     />
@@ -189,7 +282,30 @@ function App() {
                 {activeTab === 'report' && (
                     <ReportView transactions={transactions} />
                 )}
+
+                {activeTab === 'settings' && (
+                    <SettingsView
+                        theme={theme}
+                        setTheme={setTheme}
+                        pwa={pwa}
+                        categories={categoriesState.categories}
+                        categoryBudgets={categoryBudgets}
+                        setCategoryBudget={setCategoryBudget}
+                        recurringRules={recurringRules}
+                        addRecurringRule={addRecurringRule}
+                        updateRecurringRule={updateRecurringRule}
+                        deleteRecurringRule={deleteRecurringRule}
+                        onPostRecurring={handlePostRecurring}
+                    />
+                )}
             </main>
+
+            {undoDelete && (
+                <div className="undo-toast" role="status">
+                    <span>已刪除 1 筆紀錄</span>
+                    <button type="button" onClick={handleUndoDelete}>復原</button>
+                </div>
+            )}
 
             <TabBar active={activeTab} onChange={setActiveTab} />
         </>

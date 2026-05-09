@@ -2,33 +2,12 @@ import { useMemo, useState } from 'react';
 import {
     ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend
 } from 'recharts';
+import { lastNDays, lastNMonths } from '../utils/date';
 import './TrendChart.css';
 
 const formatTWD = (n) => new Intl.NumberFormat('zh-TW', {
     style: 'currency', currency: 'TWD', minimumFractionDigits: 0
 }).format(n);
-
-const lastNDays = (n) => {
-    const out = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    for (let i = n - 1; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        out.push(d.toISOString().split('T')[0]);
-    }
-    return out;
-};
-
-const lastNMonths = (n) => {
-    const out = [];
-    const now = new Date();
-    for (let i = n - 1; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-    }
-    return out;
-};
 
 export function TrendChart({ transactions }) {
     const [mode, setMode] = useState('day'); // 'day' | 'month'

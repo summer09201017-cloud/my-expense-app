@@ -7,6 +7,7 @@
   --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   --income-color: #10b981;
   --expense-color: #ef4444;
+  --border-color: rgba(100, 116, 139, 0.18);
   --border-radius: 1.5rem;
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -22,6 +23,7 @@
     --bg-card: rgba(30, 41, 59, 0.7);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
+    --border-color: rgba(148, 163, 184, 0.18);
     --glass-border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
@@ -32,6 +34,7 @@
   --bg-card: rgba(30, 41, 59, 0.7);
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
+  --border-color: rgba(148, 163, 184, 0.18);
   --glass-border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -66,8 +69,36 @@ body {
 /* 頂部工具列：4 個小按鈕 */
 .app-toolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+}
+
+.toolbar-title strong {
+  font-size: 1rem;
+}
+
+.toolbar-title span {
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--income-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
@@ -92,9 +123,39 @@ body {
   color: var(--accent-color);
 }
 
+.install-toolbar-btn {
+  color: var(--income-color);
+}
+
+.undo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(4.8rem + env(safe-area-inset-bottom));
+  z-index: 200;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: min(92vw, 360px);
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.92);
+  color: white;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.undo-toast button {
+  color: #93c5fd;
+  font-weight: 800;
+}
+
 @media (max-width: 420px) {
   .toolbar-label { display: none; }
   .toolbar-btn { padding: 0.5rem; }
+  .toolbar-title strong { font-size: 0.92rem; }
 }
 
 .app-main {

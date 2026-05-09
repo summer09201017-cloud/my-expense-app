@@ -1,24 +1,39 @@
-import { useState, useEffect } from 'react';
-import { PlusCircle, MinusCircle, X, Repeat, Check, Keyboard, Hash } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+    Check,
+    Hash,
+    Keyboard,
+    MinusCircle,
+    PlusCircle,
+    Repeat,
+    Save,
+    Trash2,
+    X,
+    Zap,
+} from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
+import { useQuickTemplates } from '../hooks/useQuickTemplates';
 import { Numpad } from './Numpad';
 import { AddCategoryDialog } from './IconPicker';
 import { joinCategory } from '../utils/icons';
+import { toLocalDateString } from '../utils/date';
 import './TransactionForm.css';
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
 
-export function TransactionForm({ onAdd, editingTransaction, prefillTransaction, onUpdate, onCancelEdit, onConsumePrefill }) {
+export function TransactionForm({ onAdd, editingTransaction, prefillTransaction, onUpdate, onCancelEdit, onConsumePrefill, categoriesState }) {
     const [type, setType] = useState('expense');
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(toLocalDateString());
     const [note, setNote] = useState('');
     const [continuousMode, setContinuousMode] = useState(() => localStorage.getItem('continuous_mode') === '1');
-    const [useNumpad, setUseNumpad] = useState(() => localStorage.getItem('numpad_mode') !== '0'); // 預設開
+    const [useNumpad, setUseNumpad] = useState(() => localStorage.getItem('numpad_mode') !== '0');
     const [justSaved, setJustSaved] = useState(false);
 
-    const { categories, addCategory, deleteCategory } = useCategories();
+    const localCategoriesState = useCategories();
+    const { categories, addCategory, deleteCategory } = categoriesState || localCategoriesState;
+    const { templates, addTemplate, deleteTemplate } = useQuickTemplates();
     const [showAddCategory, setShowAddCategory] = useState(false);
 
     useEffect(() => {
@@ -29,7 +44,6 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
         localStorage.setItem('numpad_mode', useNumpad ? '1' : '0');
     }, [useNumpad]);
 
-    // 編輯模式：載入該筆資料
     useEffect(() => {
         if (editingTransaction) {
             setType(editingTransaction.type);
@@ -41,12 +55,11 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
             setType('expense');
             setAmount('');
             setCategory('');
-            setDate(new Date().toISOString().split('T')[0]);
+            setDate(toLocalDateString());
             setNote('');
         }
     }, [editingTransaction]);
 
-    // 「複製此筆」prefill
     useEffect(() => {
         if (prefillTransaction) {
             setType(prefillTransaction.type);
@@ -57,12 +70,16 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
         }
     }, [prefillTransaction]);
 
-    // 切換收支類型時，若選中分類不在新類型，清空
     useEffect(() => {
         if (category && !categories[type].includes(category)) {
             setCategory('');
         }
     }, [type, categories, category]);
+
+    const flashSaved = () => {
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 1200);
+    };
 
     const handleAddCategory = ({ icon, name }) => {
         const joined = joinCategory(icon, name);
@@ -72,6 +89,24 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
             setShowAddCategory(false);
         } else {
             alert('此分類已存在或名稱無效！');
+        }
+    };
+
+    const handleQuickAdd = (template) => {
+        onAdd({
+            type: template.type,
+            amount: template.amount,
+            category: template.category,
+            date: toLocalDateString(),
+            note: template.note || '',
+        });
+        flashSaved();
+    };
+
+    const handleSaveTemplate = () => {
+        const success = addTemplate({ type, amount, category, note });
+        if (!success) {
+            alert('請先輸入有效金額並選擇分類，才能存成模板');
         }
     };
 
@@ -101,8 +136,7 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                 setNote('');
             }
             if (prefillTransaction && onConsumePrefill) onConsumePrefill();
-            setJustSaved(true);
-            setTimeout(() => setJustSaved(false), 1200);
+            flashSaved();
         }
     };
 
@@ -135,6 +169,56 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                     收入
                 </button>
             </div>
+
+            {!editingTransaction && templates.length > 0 && (
+                <div className="template-section">
+                    <div className="template-header">
+                        <span><Zap size={15} /> 常用模板</span>
+                        <button
+                            type="button"
+                            className="save-template-btn"
+                            onClick={handleSaveTemplate}
+                            title="把目前輸入存成模板"
+                        >
+                            <Save size={14} />
+                            存目前
+                        </button>
+                    </div>
+                    <div className="template-chips">
+                        {templates.map((template) => (
+                            <button
+                                type="button"
+                                key={template.id}
+                                className={`template-chip ${template.type}`}
+                                onClick={() => handleQuickAdd(template)}
+                                title="一鍵新增今天的這筆紀錄"
+                            >
+                                <span>{template.note || template.category}</span>
+                                <strong>${template.amount}</strong>
+                                <span
+                                    role="button"
+                                    tabIndex={0}
+                                    className="template-delete"
+                                    title="刪除模板"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        deleteTemplate(template.id);
+                                    }}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            deleteTemplate(template.id);
+                                        }
+                                    }}
+                                >
+                                    <Trash2 size={12} />
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="form-group amount-group">
                 <span className="currency-symbol">$</span>
@@ -249,15 +333,25 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
             </div>
 
             {!editingTransaction && (
-                <label className={`continuous-toggle ${continuousMode ? 'active' : ''}`} title="開啟後送出仍保留分類與日期，方便連續輸入">
-                    <input
-                        type="checkbox"
-                        checked={continuousMode}
-                        onChange={(e) => setContinuousMode(e.target.checked)}
-                    />
-                    <Repeat size={14} />
-                    <span>連續記帳模式</span>
-                </label>
+                <div className="form-options">
+                    <label className={`continuous-toggle ${continuousMode ? 'active' : ''}`} title="開啟後送出仍保留分類與日期，方便連續輸入">
+                        <input
+                            type="checkbox"
+                            checked={continuousMode}
+                            onChange={(e) => setContinuousMode(e.target.checked)}
+                        />
+                        <Repeat size={14} />
+                        <span>連續記帳模式</span>
+                    </label>
+                    <button
+                        type="button"
+                        className="save-template-inline"
+                        onClick={handleSaveTemplate}
+                    >
+                        <Save size={14} />
+                        存成模板
+                    </button>
+                </div>
             )}
 
             <div className="form-actions">

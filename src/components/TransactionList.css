@@ -31,6 +31,16 @@
     gap: 0.25rem;
 }
 
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.range-toggle {
+    overflow-x: auto;
+}
+
 .mode-btn {
     padding: 0.4rem 0.85rem;
     border-radius: 0.55rem;
@@ -78,6 +88,38 @@
     color: var(--text-primary);
     outline: none;
     cursor: pointer;
+}
+
+.custom-range-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.85rem;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.type-filter {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+}
+
+.type-filter button {
+    padding: 0.55rem 0.5rem;
+    border-radius: 0.75rem;
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.84rem;
+}
+
+.type-filter button.active {
+    background: var(--accent-color);
+    color: white;
+    box-shadow: var(--shadow-sm);
 }
 
 .period-summary {
@@ -291,6 +333,12 @@
         background: rgba(255, 255, 255, 0.1);
     }
 
+    .custom-range-filter,
+    .type-filter button,
+    .view-mode-toggle {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
     .date-filter-input::-webkit-calendar-picker-indicator {
         filter: invert(1);
     }
@@ -298,7 +346,7 @@
     .period-summary {
         background: rgba(255, 255, 255, 0.05);
     }
-    
+
     .search-input {
         background: rgba(255, 255, 255, 0.05);
     }
@@ -306,4 +354,4 @@
     .search-input:focus {
         background: rgba(30, 41, 59, 1);
     }
-}
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Cloud, CloudUpload, CloudDownload, Settings, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Cloud, CloudUpload, CloudDownload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import './CloudSync.css';
 
 export function CloudSync({ transactions, onRestore }) {
