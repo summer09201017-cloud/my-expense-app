@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Check } from 'lucide-react';
 import { ICON_GROUPS } from '../utils/icons';
 import './IconPicker.css';
@@ -7,6 +8,13 @@ import './IconPicker.css';
 export function IconGrid({ value, onPick }) {
     const [activeGroup, setActiveGroup] = useState(ICON_GROUPS[0].key);
     const group = ICON_GROUPS.find(g => g.key === activeGroup) || ICON_GROUPS[0];
+
+    const pickIcon = (event, icon) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onPick(icon);
+    };
+
     return (
         <>
             <div className="icon-picker-tabs">
@@ -26,8 +34,10 @@ export function IconGrid({ value, onPick }) {
                     <button
                         type="button"
                         key={icon}
+                        aria-pressed={value === icon}
                         className={`icon-cell ${value === icon ? 'selected' : ''}`}
-                        onClick={() => onPick(icon)}
+                        onPointerDown={(event) => pickIcon(event, icon)}
+                        onClick={(event) => pickIcon(event, icon)}
                     >
                         {icon}
                     </button>
@@ -39,7 +49,7 @@ export function IconGrid({ value, onPick }) {
 
 // 單純選圖示用 modal
 export function IconPicker({ value, onPick, onClose }) {
-    return (
+    return createPortal((
         <div className="icon-picker-overlay" onClick={onClose}>
             <div className="icon-picker glass-panel" onClick={e => e.stopPropagation()}>
                 <div className="icon-picker-header">
@@ -51,7 +61,7 @@ export function IconPicker({ value, onPick, onClose }) {
                 <IconGrid value={value} onPick={onPick} />
             </div>
         </div>
-    );
+    ), document.body);
 }
 
 // 新增分類用 modal：圖示 + 名稱
@@ -67,7 +77,7 @@ export function AddCategoryDialog({ initialIcon = '✨', onCancel, onConfirm }) 
         onConfirm({ icon, name: name.trim() });
     };
 
-    return (
+    return createPortal((
         <div className="icon-picker-overlay" onClick={onCancel}>
             <div className="icon-picker glass-panel" onClick={e => e.stopPropagation()}>
                 <div className="icon-picker-header">
@@ -78,14 +88,13 @@ export function AddCategoryDialog({ initialIcon = '✨', onCancel, onConfirm }) 
                 </div>
 
                 <div className="add-cat-preview">
-                    <span className="add-cat-icon">{icon || '✨'}</span>
+                    <span className="add-cat-icon" aria-label="目前選擇的圖案">{icon || '✨'}</span>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="分類名稱（例如：早餐）"
                         className="add-cat-name"
-                        autoFocus
                         maxLength={12}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleConfirm(); } }}
                     />
@@ -103,5 +112,5 @@ export function AddCategoryDialog({ initialIcon = '✨', onCancel, onConfirm }) 
                 </button>
             </div>
         </div>
-    );
+    ), document.body);
 }
