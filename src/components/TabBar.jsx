@@ -21,8 +21,10 @@ export function TabBar({ active, onChange }) {
                         type="button"
                         role="tab"
                         aria-selected={active === tab.key}
+                        aria-label={tab.label}
                         className={`tab-btn ${active === tab.key ? 'active' : ''}`}
                         onClick={() => onChange(tab.key)}
+                        title={tab.label}
                     >
                         <TabIcon size={20} />
                         <span>{tab.label}</span>
