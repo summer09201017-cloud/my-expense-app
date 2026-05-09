@@ -1,0 +1,202 @@
+.icon-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn 0.2s ease;
+}
+
+.icon-picker {
+    width: 100%;
+    max-width: 520px;
+    max-height: 70vh;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 600px) {
+    .icon-picker-overlay {
+        align-items: center;
+    }
+    .icon-picker {
+        border-radius: var(--border-radius);
+    }
+}
+
+.icon-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 0 0.25rem;
+}
+
+.icon-picker-close {
+    color: var(--text-secondary);
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+}
+
+.icon-picker-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.icon-picker-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+}
+
+.icon-picker-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.icon-tab {
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.icon-tab.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 0.4rem;
+    overflow-y: auto;
+    padding: 0.25rem;
+}
+
+.icon-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 0.65rem;
+    font-size: 1.5rem;
+    transition: all 0.15s ease;
+}
+
+.icon-cell:hover {
+    background: rgba(59, 130, 246, 0.15);
+    transform: scale(1.08);
+}
+
+.icon-cell.selected {
+    background: var(--accent-color);
+    box-shadow: var(--focus-ring);
+}
+
+:root[data-theme="dark"] .icon-tab,
+:root[data-theme="dark"] .icon-cell {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme="dark"] .icon-cell:hover {
+    background: rgba(59, 130, 246, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .icon-tab,
+    :root:not([data-theme="light"]) .icon-cell {
+        background: rgba(255, 255, 255, 0.06);
+    }
+    :root:not([data-theme="light"]) .icon-cell:hover {
+        background: rgba(59, 130, 246, 0.25);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 新增分類用：圖示預覽 + 名稱輸入 */
+.add-cat-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 0.85rem;
+}
+
+.add-cat-icon {
+    font-size: 1.6rem;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 0.6rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.add-cat-name {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    font-family: inherit;
+}
+
+.add-cat-confirm {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.85rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35);
+}
+
+.add-cat-confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+:root[data-theme="dark"] .add-cat-preview {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="dark"] .add-cat-icon {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .add-cat-preview {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    :root:not([data-theme="light"]) .add-cat-icon {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}

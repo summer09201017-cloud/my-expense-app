@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, MinusCircle, X, Repeat, Check } from 'lucide-react';
+import { PlusCircle, MinusCircle, X, Repeat, Check, Keyboard, Hash } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
+import { Numpad } from './Numpad';
+import { AddCategoryDialog } from './IconPicker';
+import { joinCategory } from '../utils/icons';
 import './TransactionForm.css';
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
@@ -12,26 +15,29 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [note, setNote] = useState('');
     const [continuousMode, setContinuousMode] = useState(() => localStorage.getItem('continuous_mode') === '1');
+    const [useNumpad, setUseNumpad] = useState(() => localStorage.getItem('numpad_mode') !== '0'); // 預設開
     const [justSaved, setJustSaved] = useState(false);
 
     const { categories, addCategory, deleteCategory } = useCategories();
-    const [isAddingCategory, setIsAddingCategory] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState('');
+    const [showAddCategory, setShowAddCategory] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('continuous_mode', continuousMode ? '1' : '0');
     }, [continuousMode]);
 
-    // 當傳入 editingTransaction 時，將表單內容設為該筆紀錄
+    useEffect(() => {
+        localStorage.setItem('numpad_mode', useNumpad ? '1' : '0');
+    }, [useNumpad]);
+
+    // 編輯模式：載入該筆資料
     useEffect(() => {
         if (editingTransaction) {
             setType(editingTransaction.type);
-            setAmount(editingTransaction.amount);
+            setAmount(String(editingTransaction.amount));
             setCategory(editingTransaction.category);
             setDate(editingTransaction.date);
             setNote(editingTransaction.note || '');
         } else {
-            // 重設回預設
             setType('expense');
             setAmount('');
             setCategory('');
@@ -40,55 +46,52 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
         }
     }, [editingTransaction]);
 
-    // 處理「複製此筆」prefill：載入但不進入編輯狀態
+    // 「複製此筆」prefill
     useEffect(() => {
         if (prefillTransaction) {
             setType(prefillTransaction.type);
-            setAmount(prefillTransaction.amount);
+            setAmount(String(prefillTransaction.amount));
             setCategory(prefillTransaction.category);
             setDate(prefillTransaction.date);
             setNote(prefillTransaction.note || '');
         }
     }, [prefillTransaction]);
 
-    // 當切換收支類型時，如果目前選擇的類別不在新類型的列表中，則清空選擇
+    // 切換收支類型時，若選中分類不在新類型，清空
     useEffect(() => {
         if (category && !categories[type].includes(category)) {
             setCategory('');
         }
     }, [type, categories, category]);
 
-    const handleAddCategory = () => {
-        if (newCategoryName.trim()) {
-            const success = addCategory(type, newCategoryName);
-            if (success) {
-                setCategory(newCategoryName.trim());
-            } else {
-                alert('此分類已存在或名稱無效！');
-            }
+    const handleAddCategory = ({ icon, name }) => {
+        const joined = joinCategory(icon, name);
+        const success = addCategory(type, joined);
+        if (success) {
+            setCategory(joined);
+            setShowAddCategory(false);
+        } else {
+            alert('此分類已存在或名稱無效！');
         }
-        setIsAddingCategory(false);
-        setNewCategoryName('');
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!amount || isNaN(amount) || amount <= 0) {
+        const amt = Number(amount);
+        if (!amount || !Number.isFinite(amt) || amt <= 0) {
             alert('請輸入有效的金額');
             return;
         }
-
         if (!category.trim()) {
-            alert('請輸入分類');
+            alert('請選擇分類');
             return;
         }
 
         if (editingTransaction) {
-            onUpdate(editingTransaction.id, { type, amount: Number(amount), category, date, note });
+            onUpdate(editingTransaction.id, { type, amount: amt, category, date, note });
             onCancelEdit();
         } else {
-            onAdd({ type, amount: Number(amount), category, date, note });
-            // 連續模式：保留 type / category / date，僅清空金額與備註
+            onAdd({ type, amount: amt, category, date, note });
             if (continuousMode) {
                 setAmount('');
                 setNote('');
@@ -98,7 +101,6 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                 setNote('');
             }
             if (prefillTransaction && onConsumePrefill) onConsumePrefill();
-            // 短暫顯示「已新增」提示
             setJustSaved(true);
             setTimeout(() => setJustSaved(false), 1200);
         }
@@ -114,6 +116,7 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                     </button>
                 </div>
             )}
+
             <div className="type-toggle">
                 <button
                     type="button"
@@ -136,13 +139,22 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
             <div className="form-group amount-group">
                 <span className="currency-symbol">$</span>
                 <input
-                    type="number"
+                    type={useNumpad ? 'text' : 'number'}
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0"
                     className="amount-input"
-                    inputMode="decimal"
+                    inputMode={useNumpad ? 'none' : 'decimal'}
+                    readOnly={useNumpad}
                 />
+                <button
+                    type="button"
+                    className="kb-toggle"
+                    onClick={() => setUseNumpad(v => !v)}
+                    title={useNumpad ? '切換系統鍵盤' : '切換數字鍵盤'}
+                >
+                    {useNumpad ? <Keyboard size={16} /> : <Hash size={16} />}
+                </button>
             </div>
 
             <div className="quick-amounts">
@@ -167,6 +179,14 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                     </button>
                 )}
             </div>
+
+            {useNumpad && (
+                <Numpad
+                    value={amount}
+                    onChange={setAmount}
+                    onDone={handleSubmit}
+                />
+            )}
 
             <div className="form-row">
                 <div className="form-group flex-1">
@@ -195,44 +215,18 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                                 </button>
                             </div>
                         ))}
-                        {isAddingCategory ? (
-                            <div className="category-chip adding">
-                                <input
-                                    type="text"
-                                    value={newCategoryName}
-                                    onChange={(e) => setNewCategoryName(e.target.value)}
-                                    placeholder="新分類"
-                                    autoFocus
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            handleAddCategory();
-                                        } else if (e.key === 'Escape') {
-                                            setIsAddingCategory(false);
-                                            setNewCategoryName('');
-                                        }
-                                    }}
-                                    onBlur={() => {
-                                        if(newCategoryName.trim()) {
-                                            handleAddCategory();
-                                        } else {
-                                            setIsAddingCategory(false);
-                                        }
-                                    }}
-                                />
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                className="category-chip add-btn"
-                                onClick={() => setIsAddingCategory(true)}
-                            >
-                                + 新增
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            className="category-chip add-btn"
+                            onClick={() => setShowAddCategory(true)}
+                        >
+                            + 新增
+                        </button>
                     </div>
                 </div>
+            </div>
 
+            <div className="form-row">
                 <div className="form-group flex-1">
                     <label>日期</label>
                     <input
@@ -242,17 +236,16 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                         className="std-input"
                     />
                 </div>
-            </div>
-
-            <div className="form-group">
-                <label>備註 (選填)</label>
-                <input
-                    type="text"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="輸入備註..."
-                    className="std-input"
-                />
+                <div className="form-group flex-1">
+                    <label>備註 (選填)</label>
+                    <input
+                        type="text"
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="輸入備註..."
+                        className="std-input"
+                    />
+                </div>
             </div>
 
             {!editingTransaction && (
@@ -277,6 +270,13 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                     {justSaved ? <><Check size={18} /> 已新增</> : (editingTransaction ? '儲存修改' : '新增紀錄')}
                 </button>
             </div>
+
+            {showAddCategory && (
+                <AddCategoryDialog
+                    onCancel={() => setShowAddCategory(false)}
+                    onConfirm={handleAddCategory}
+                />
+            )}
         </form>
     );
 }

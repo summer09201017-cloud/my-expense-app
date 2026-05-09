@@ -73,12 +73,12 @@ export function CloudSync({ transactions, onRestore }) {
     return (
         <div className="cloud-sync-container">
             <button
-                className="glass-panel cloud-toggle-btn"
+                className="toolbar-btn cloud-toggle-btn"
                 onClick={() => setIsOpen(!isOpen)}
                 title="雲端同步設定"
             >
                 <Cloud size={16} />
-                <span>雲端同步</span>
+                <span className="toolbar-label">雲端</span>
             </button>
 
             {isOpen && (

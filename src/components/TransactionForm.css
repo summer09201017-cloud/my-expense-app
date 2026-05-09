@@ -74,13 +74,36 @@
     width: 100%;
     font-size: 2rem;
     font-weight: 700;
-    padding: 1rem 1rem 1rem 2.5rem;
+    padding: 1rem 3rem 1rem 2.5rem;
     border: 2px solid transparent;
     border-radius: 1rem;
     background: rgba(0, 0, 0, 0.03);
     color: var(--text-primary);
     transition: all 0.2s ease;
     font-family: inherit;
+    text-align: right;
+}
+
+.amount-input[readonly] {
+    cursor: pointer;
+}
+
+.kb-toggle {
+    position: absolute;
+    right: 0.6rem;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    color: var(--text-secondary);
+    background: transparent;
+}
+
+.kb-toggle:hover {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--accent-color);
 }
 
 .amount-input:focus {
