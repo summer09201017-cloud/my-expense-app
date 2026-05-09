@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 const STORAGE_KEY = 'quick_templates';
 
 const DEFAULT_TEMPLATES = [
-    { id: 'default-breakfast', type: 'expense', amount: 60, category: '🍽️ 餐飲', note: '早餐' },
-    { id: 'default-lunch', type: 'expense', amount: 120, category: '🍽️ 餐飲', note: '午餐' },
-    { id: 'default-mrt', type: 'expense', amount: 30, category: '🚌 交通', note: '捷運' },
-    { id: 'default-coffee', type: 'expense', amount: 75, category: '🍽️ 餐飲', note: '咖啡' },
+    { id: 'default-breakfast', type: 'expense', amount: 60, category: '🍱 飲食', note: '早餐' },
+    { id: 'default-lunch', type: 'expense', amount: 120, category: '🍱 飲食', note: '午餐' },
+    { id: 'default-mrt', type: 'expense', amount: 30, category: '🚇 交通', note: '捷運' },
+    { id: 'default-coffee', type: 'expense', amount: 75, category: '🍱 飲食', note: '咖啡' },
 ];
 
 const getInitial = () => {
