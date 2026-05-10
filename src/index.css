@@ -140,6 +140,40 @@ body {
   flex-shrink: 0;
 }
 
+.fab-add {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  z-index: 90;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.35), 0 4px 8px rgba(15, 23, 42, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fabPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fab-add:hover,
+.fab-add:focus-visible {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 14px 32px rgba(59, 130, 246, 0.42), 0 6px 12px rgba(15, 23, 42, 0.15);
+  outline: none;
+}
+
+.fab-add:active {
+  transform: translateY(0) scale(0.97);
+}
+
+@keyframes fabPop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .undo-toast {
   position: fixed;
   left: 50%;
@@ -193,12 +227,13 @@ body {
   .settings-toolbar-btn {
     display: inline-flex;
     position: fixed;
-    top: 0.75rem;
-    left: 1rem;
+    top: calc(0.75rem + env(safe-area-inset-top));
+    left: max(1rem, env(safe-area-inset-left));
     right: auto;
     z-index: 300;
     width: 40px;
     height: 40px;
+    padding: 0;
     justify-content: center;
   }
 

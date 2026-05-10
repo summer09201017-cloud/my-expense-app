@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Download, Monitor, Moon, Settings, Smartphone, Sun, Upload } from 'lucide-react';
+import { Download, Monitor, Moon, Plus, Settings, Smartphone, Sun, Upload } from 'lucide-react';
 import { useTransactions } from './hooks/useTransactions';
 import { useTheme } from './hooks/useTheme';
 import { useBudget } from './hooks/useBudget';
@@ -225,20 +225,20 @@ function App() {
     return (
         <>
             <header className="app-toolbar">
+                <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`toolbar-btn settings-toolbar-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                    title="設定"
+                    aria-label="設定"
+                >
+                    <Settings size={16} />
+                    <span className="toolbar-label">設定</span>
+                </button>
                 <div className="toolbar-title">
                     <strong>隨身記帳本</strong>
                     <span>PWA</span>
                 </div>
                 <div className="toolbar-actions">
-                    <button
-                        onClick={() => setActiveTab('settings')}
-                        className={`toolbar-btn settings-toolbar-btn ${activeTab === 'settings' ? 'active' : ''}`}
-                        title="設定"
-                        aria-label="設定"
-                    >
-                        <Settings size={16} />
-                        <span className="toolbar-label">設定</span>
-                    </button>
                     {pwa.canInstall && !pwa.isStandalone && (
                         <button
                             onClick={pwa.install}
@@ -348,6 +348,23 @@ function App() {
                     />
                 )}
             </main>
+
+            {activeTab !== 'add' && (
+                <button
+                    type="button"
+                    onClick={() => {
+                        setEditingTransaction(null);
+                        setPrefillTransaction(null);
+                        setActiveTab('add');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="fab-add"
+                    aria-label="新增交易"
+                    title="新增交易"
+                >
+                    <Plus size={26} strokeWidth={2.5} />
+                </button>
+            )}
 
             {undoAction && (
                 <div className="undo-toast" role="status">
