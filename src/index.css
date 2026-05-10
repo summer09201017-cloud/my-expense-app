@@ -79,6 +79,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
   color: var(--text-primary);
 }
 
@@ -101,6 +102,9 @@ body {
   justify-content: flex-end;
   gap: 0.4rem;
   flex-wrap: wrap;
+  margin-left: auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .toolbar-btn {
@@ -132,6 +136,10 @@ body {
   color: var(--income-color);
 }
 
+.settings-toolbar-btn {
+  flex-shrink: 0;
+}
+
 .undo-toast {
   position: fixed;
   left: 50%;
@@ -161,6 +169,62 @@ body {
   .toolbar-label { display: none; }
   .toolbar-btn { padding: 0.5rem; }
   .toolbar-title strong { font-size: 0.92rem; }
+}
+
+@media (max-width: 1200px) {
+  .settings-toolbar-btn {
+    display: inline-flex;
+    position: fixed;
+    top: 0.75rem;
+    right: 1rem;
+    z-index: 300;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .settings-toolbar-btn .toolbar-label {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  #root {
+    overflow-x: clip;
+  }
+
+  .app-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .toolbar-title strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .settings-toolbar-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .toolbar-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .toolbar-actions::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .app-main {

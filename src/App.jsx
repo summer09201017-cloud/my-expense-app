@@ -230,6 +230,15 @@ function App() {
                     <span>PWA</span>
                 </div>
                 <div className="toolbar-actions">
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`toolbar-btn settings-toolbar-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                        title="設定"
+                        aria-label="設定"
+                    >
+                        <Settings size={16} />
+                        <span className="toolbar-label">設定</span>
+                    </button>
                     {pwa.canInstall && !pwa.isStandalone && (
                         <button
                             onClick={pwa.install}
@@ -247,14 +256,6 @@ function App() {
                     >
                         <ThemeIcon size={16} />
                         <span className="toolbar-label">{themeLabel}</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('settings')}
-                        className={`toolbar-btn ${activeTab === 'settings' ? 'active' : ''}`}
-                        title="設定"
-                    >
-                        <Settings size={16} />
-                        <span className="toolbar-label">設定</span>
                     </button>
                     <CloudSync transactions={transactions} onRestore={restoreTransactions} />
                     <input
