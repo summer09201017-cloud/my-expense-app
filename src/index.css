@@ -47,12 +47,13 @@
 body {
   font-family: 'Inter', -apple-system, system-ui, sans-serif;
   background-color: var(--bg-primary);
-  background-image: 
+  background-image:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 400px),
     radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.15), transparent 400px);
   background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -257,11 +258,6 @@ body {
   }
 }
 
-@media (max-width: 520px) {
-  #root {
-    overflow-x: clip;
-  }
-}
 
 .app-main {
   display: flex;
