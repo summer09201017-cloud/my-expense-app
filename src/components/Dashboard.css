@@ -228,6 +228,49 @@
     font-size: 1rem;
 }
 
+.budget-forecast {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    border-radius: 0.8rem;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.budget-forecast div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.budget-forecast span,
+.budget-forecast p {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.budget-forecast strong {
+    font-size: 1rem;
+}
+
+.budget-forecast p {
+    margin: 0;
+    font-weight: 700;
+}
+
+.budget-forecast.warn p {
+    color: color-mix(in srgb, var(--accent-color) 18%, white);
+}
+
+.budget-forecast.danger {
+    background: color-mix(in srgb, var(--expense-color) 20%, transparent);
+}
+
+.budget-forecast.danger p {
+    color: color-mix(in srgb, var(--expense-color) 24%, white);
+}
+
 .dashboard-section {
     display: flex;
     flex-direction: column;
@@ -251,6 +294,80 @@
 
 .recurring-reminder-row {
     font-size: 0.88rem;
+}
+
+.recurring-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.month-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.recurring-summary-grid div,
+.month-compare-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    padding: 0.65rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.recurring-summary-grid span,
+.month-compare-card span,
+.month-compare-card small,
+.recurring-reminder-row small,
+.recurring-reminder-row em {
+    font-size: 0.76rem;
+    opacity: 0.88;
+}
+
+.recurring-summary-grid strong,
+.month-compare-card strong {
+    font-size: 1rem;
+}
+
+.recurring-summary-grid .warn strong,
+.month-compare-card.bad strong {
+    color: color-mix(in srgb, var(--expense-color) 24%, white);
+}
+
+.month-compare-card.good strong {
+    color: color-mix(in srgb, var(--income-color) 24%, white);
+}
+
+.recurring-mini-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.recurring-reminder-row div {
+    min-width: 0;
+}
+
+.recurring-reminder-row span,
+.recurring-reminder-row small {
+    display: block;
+}
+
+.recurring-reminder-row small {
+    margin-top: 0.15rem;
+}
+
+.recurring-reminder-row.due {
+    font-weight: 800;
+}
+
+.recurring-reminder-row em {
+    font-style: normal;
+    white-space: nowrap;
 }
 
 .recurring-reminder-row button {
@@ -345,6 +462,11 @@
     }
 
     .habit-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .recurring-summary-grid,
+    .month-compare-grid {
         grid-template-columns: 1fr;
     }
 }

@@ -167,7 +167,7 @@ export function TransactionList({ transactions, onDelete, onEdit, onCopy }) {
                             <div
                                 key={t.id}
                                 className="transaction-item"
-                                style={{ animationDelay: `${i * 0.05}s` }}
+                                style={{ animationDelay: `${Math.min(i * 0.05, 0.5)}s` }}
                             >
                                 <div className="item-left">
                                     <div className={`type-badge ${t.type}`}>

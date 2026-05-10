@@ -115,6 +115,26 @@
     background: rgba(59, 130, 246, 0.12);
 }
 
+.cal-cell.heat-1 {
+    background: color-mix(in srgb, var(--expense-color) 8%, transparent);
+}
+
+.cal-cell.heat-2 {
+    background: color-mix(in srgb, var(--expense-color) 13%, transparent);
+}
+
+.cal-cell.heat-3 {
+    background: color-mix(in srgb, var(--expense-color) 18%, transparent);
+}
+
+.cal-cell.heat-4 {
+    background: color-mix(in srgb, var(--expense-color) 24%, transparent);
+}
+
+.cal-cell.heat-5 {
+    background: color-mix(in srgb, var(--expense-color) 32%, transparent);
+}
+
 .cal-cell.out-month {
     color: var(--text-secondary);
     opacity: 0.4;
@@ -295,7 +315,7 @@
     color: var(--accent-color);
 }
 
-:root[data-theme="dark"] .cal-cell {
+:root[data-theme="dark"] .cal-cell:not(.selected):not(.today):not(.heat-1):not(.heat-2):not(.heat-3):not(.heat-4):not(.heat-5) {
     background: rgba(255, 255, 255, 0.04);
 }
 
@@ -308,7 +328,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .cal-cell {
+    :root:not([data-theme="light"]) .cal-cell:not(.selected):not(.today):not(.heat-1):not(.heat-2):not(.heat-3):not(.heat-4):not(.heat-5) {
         background: rgba(255, 255, 255, 0.04);
     }
     :root:not([data-theme="light"]) .cal-month-summary {

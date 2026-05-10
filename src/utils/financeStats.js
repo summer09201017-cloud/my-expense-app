@@ -15,12 +15,24 @@ export const getCategorySpending = (transactions, month = toLocalMonthString()) 
 };
 
 export const getMoneyInsights = (transactions, monthlyBudget = 0) => {
-    const today = toLocalDateString();
+    const now = new Date();
+    const today = toLocalDateString(now);
     const { start: monthStart } = getMonthRange();
     const month = toLocalMonthString();
+    const previousMonth = toLocalMonthString(new Date(now.getFullYear(), now.getMonth() - 1, 1));
     const monthTransactions = transactions.filter((t) => t.date?.startsWith(month));
+    const previousMonthTransactions = transactions.filter((t) => t.date?.startsWith(previousMonth));
     const monthExpense = monthTransactions
         .filter((t) => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+    const monthIncome = monthTransactions
+        .filter((t) => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+    const previousMonthExpense = previousMonthTransactions
+        .filter((t) => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+    const previousMonthIncome = previousMonthTransactions
+        .filter((t) => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
 
     const expenseDates = new Set(
@@ -42,6 +54,30 @@ export const getMoneyInsights = (transactions, monthlyBudget = 0) => {
     const dailyAllowance = monthlyBudget > 0
         ? Math.floor(remainingBudget / daysRemainingInMonth())
         : 0;
+    const daysElapsed = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dailyAverageExpense = daysElapsed > 0 ? monthExpense / daysElapsed : 0;
+    const projectedMonthExpense = Math.round(dailyAverageExpense * daysInMonth);
+
+    const getComparison = (current, previous) => {
+        const diff = current - previous;
+        if (previous === 0) {
+            return {
+                current,
+                previous,
+                diff,
+                percent: current === 0 ? 0 : null,
+                label: current === 0 ? '與上月持平' : '上月無資料',
+            };
+        }
+        return {
+            current,
+            previous,
+            diff,
+            percent: Math.round((diff / previous) * 100),
+            label: `${diff >= 0 ? '+' : ''}${Math.round((diff / previous) * 100)}%`,
+        };
+    };
 
     const badges = [];
     if (transactions.length > 0) badges.push({ key: 'first', label: '第一筆完成', hint: '已開始累積自己的金流地圖' });
@@ -55,8 +91,18 @@ export const getMoneyInsights = (transactions, monthlyBudget = 0) => {
 
     return {
         dailyAllowance,
+        dailyAverageExpense,
+        projectedMonthExpense,
+        projectedOverspend: monthlyBudget > 0 ? Math.max(0, projectedMonthExpense - monthlyBudget) : 0,
+        projectedExpenseRatio: monthlyBudget > 0 ? projectedMonthExpense / monthlyBudget : 0,
+        daysElapsed,
+        daysInMonth,
         noExpenseDays,
         streak,
+        monthComparison: {
+            expense: getComparison(monthExpense, previousMonthExpense),
+            income: getComparison(monthIncome, previousMonthIncome),
+        },
         badges,
     };
 };

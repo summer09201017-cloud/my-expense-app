@@ -1,13 +1,11 @@
-import { Pencil, List, CalendarDays, PieChart, BarChart3, Settings } from 'lucide-react';
+import { Pencil, List, CalendarDays, BarChart3 } from 'lucide-react';
 import './TabBar.css';
 
 const TABS = [
     { key: 'add', label: '記帳', Icon: Pencil },
     { key: 'list', label: '明細', Icon: List },
     { key: 'calendar', label: '日曆', Icon: CalendarDays },
-    { key: 'charts', label: '圖表', Icon: PieChart },
-    { key: 'report', label: '報告', Icon: BarChart3 },
-    { key: 'settings', label: '設定', Icon: Settings },
+    { key: 'analysis', label: '分析', Icon: BarChart3 },
 ];
 
 export function TabBar({ active, onChange }) {

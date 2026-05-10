@@ -48,9 +48,11 @@ export const useTransactions = () => {
 
     // 更新交易
     const updateTransaction = (id, updatedData) => {
+        const previous = transactions.find(t => t.id === id) || null;
         setTransactions(prev => prev.map(t =>
             t.id === id ? { ...t, ...updatedData } : t
         ));
+        return previous;
     };
 
     // 從雲端還原（覆蓋）所有交易

@@ -66,6 +66,10 @@ export function CalendarView({ transactions, onDelete, onEdit, onCopy }) {
         return map;
     }, [transactions, year, month]);
 
+    const maxDailyExpense = useMemo(() => {
+        return Math.max(0, ...[...dailyTotals.values()].map((totals) => totals.expense));
+    }, [dailyTotals]);
+
     // 月總結
     const monthSummary = useMemo(() => {
         const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
@@ -151,12 +155,16 @@ export function CalendarView({ transactions, onDelete, onEdit, onCopy }) {
                         const totals = dailyTotals.get(key);
                         const isToday = key === todayStr;
                         const isSelected = key === selectedDate;
+                        const heatLevel = totals?.expense && maxDailyExpense > 0
+                            ? Math.min(5, Math.max(1, Math.ceil((totals.expense / maxDailyExpense) * 5)))
+                            : 0;
                         return (
                             <button
                                 type="button"
                                 key={key}
-                                className={`cal-cell ${inMonth ? '' : 'out-month'} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
+                                className={`cal-cell ${inMonth ? '' : 'out-month'} ${inMonth && heatLevel ? `heat-${heatLevel}` : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
                                 onClick={() => setSelectedDate(key)}
+                                title={totals?.expense && inMonth ? `支出 ${formatMoney(totals.expense)}` : undefined}
                             >
                                 <span className="cal-day-num">{date.getDate()}</span>
                                 {totals && inMonth && (

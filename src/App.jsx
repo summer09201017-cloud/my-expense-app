@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Download, Monitor, Moon, Smartphone, Sun, Upload } from 'lucide-react';
+import { Download, Monitor, Moon, Settings, Smartphone, Sun, Upload } from 'lucide-react';
 import { useTransactions } from './hooks/useTransactions';
 import { useTheme } from './hooks/useTheme';
 import { useBudget } from './hooks/useBudget';
@@ -7,13 +7,11 @@ import { useCategories } from './hooks/useCategories';
 import { useCategoryBudgets } from './hooks/useCategoryBudgets';
 import { useRecurringTransactions } from './hooks/useRecurringTransactions';
 import { usePwaInstall } from './hooks/usePwaInstall';
+import { AnalysisView } from './components/AnalysisView';
 import { Dashboard } from './components/Dashboard';
-import { ExpenseChart } from './components/ExpenseChart';
-import { TrendChart } from './components/TrendChart';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { CalendarView } from './components/CalendarView';
-import { ReportView } from './components/ReportView';
 import { CloudSync } from './components/CloudSync';
 import { SettingsView } from './components/SettingsView';
 import { TabBar } from './components/TabBar';
@@ -39,7 +37,7 @@ function App() {
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [prefillTransaction, setPrefillTransaction] = useState(null);
     const [activeTab, setActiveTab] = useState('add');
-    const [undoDelete, setUndoDelete] = useState(null);
+    const [undoAction, setUndoAction] = useState(null);
     const undoTimerRef = useRef(null);
     const fileInputRef = useRef(null);
 
@@ -56,12 +54,49 @@ function App() {
         () => getMoneyInsights(transactions, budget),
         [transactions, budget]
     );
-    const dueRecurringRules = useMemo(() => {
-        return recurringRules.filter((rule) => {
-            if (!rule.enabled || rule.lastPostedMonth === currentMonth) return false;
-            return localDateForMonthDay(currentMonth, rule.dayOfMonth) <= today;
-        });
+    const scheduledRecurringRules = useMemo(() => {
+        return recurringRules
+            .filter((rule) => rule.enabled)
+            .map((rule) => {
+                const scheduledDate = localDateForMonthDay(currentMonth, rule.dayOfMonth);
+                return {
+                    ...rule,
+                    scheduledDate,
+                    postedThisMonth: rule.lastPostedMonth === currentMonth,
+                    isDue: rule.lastPostedMonth !== currentMonth && scheduledDate <= today,
+                };
+            })
+            .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
     }, [recurringRules, currentMonth, today]);
+    const dueRecurringRules = useMemo(
+        () => scheduledRecurringRules.filter((rule) => rule.isDue),
+        [scheduledRecurringRules]
+    );
+    const recurringSummary = useMemo(() => {
+        const expenseTotal = scheduledRecurringRules
+            .filter((rule) => rule.type === 'expense')
+            .reduce((sum, rule) => sum + rule.amount, 0);
+        const incomeTotal = scheduledRecurringRules
+            .filter((rule) => rule.type === 'income')
+            .reduce((sum, rule) => sum + rule.amount, 0);
+        const pendingRules = scheduledRecurringRules.filter((rule) => !rule.postedThisMonth);
+
+        return {
+            enabledCount: scheduledRecurringRules.length,
+            expenseTotal,
+            incomeTotal,
+            postedCount: scheduledRecurringRules.length - pendingRules.length,
+            pendingCount: pendingRules.length,
+            dueCount: dueRecurringRules.length,
+            upcomingRules: pendingRules.slice(0, 3),
+        };
+    }, [scheduledRecurringRules, dueRecurringRules]);
+
+    const showUndoAction = (action) => {
+        window.clearTimeout(undoTimerRef.current);
+        setUndoAction(action);
+        undoTimerRef.current = window.setTimeout(() => setUndoAction(null), 7000);
+    };
 
     const handleCopy = (transaction) => {
         setEditingTransaction(null);
@@ -91,16 +126,33 @@ function App() {
 
         const deleted = deleteTransaction(id);
         if (!deleted) return;
-        window.clearTimeout(undoTimerRef.current);
-        setUndoDelete(deleted);
-        undoTimerRef.current = window.setTimeout(() => setUndoDelete(null), 7000);
+        showUndoAction({
+            type: 'delete',
+            transaction: deleted,
+            message: '已刪除 1 筆紀錄',
+        });
     };
 
-    const handleUndoDelete = () => {
-        if (!undoDelete) return;
-        mergeTransactions([undoDelete]);
+    const handleUpdateTransaction = (id, updatedData) => {
+        const previous = updateTransaction(id, updatedData);
+        if (!previous) return;
+        showUndoAction({
+            type: 'edit',
+            transaction: previous,
+            message: '已儲存修改',
+        });
+    };
+
+    const handleUndoAction = () => {
+        if (!undoAction) return;
+        if (undoAction.type === 'delete') {
+            mergeTransactions([undoAction.transaction]);
+        }
+        if (undoAction.type === 'edit') {
+            updateTransaction(undoAction.transaction.id, undoAction.transaction);
+        }
         window.clearTimeout(undoTimerRef.current);
-        setUndoDelete(null);
+        setUndoAction(null);
     };
 
     const handlePostRecurring = (rule) => {
@@ -196,6 +248,14 @@ function App() {
                         <ThemeIcon size={16} />
                         <span className="toolbar-label">{themeLabel}</span>
                     </button>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`toolbar-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                        title="設定"
+                    >
+                        <Settings size={16} />
+                        <span className="toolbar-label">設定</span>
+                    </button>
                     <CloudSync transactions={transactions} onRestore={restoreTransactions} />
                     <input
                         ref={fileInputRef}
@@ -234,13 +294,14 @@ function App() {
                             categorySpending={categorySpending}
                             moneyInsights={moneyInsights}
                             dueRecurringRules={dueRecurringRules}
+                            recurringSummary={recurringSummary}
                             onPostRecurring={handlePostRecurring}
                         />
                         <TransactionForm
                             onAdd={addTransaction}
                             editingTransaction={editingTransaction}
                             prefillTransaction={prefillTransaction}
-                            onUpdate={updateTransaction}
+                            onUpdate={handleUpdateTransaction}
                             onCancelEdit={() => setEditingTransaction(null)}
                             onConsumePrefill={() => setPrefillTransaction(null)}
                             categoriesState={categoriesState}
@@ -266,21 +327,8 @@ function App() {
                     />
                 )}
 
-                {activeTab === 'charts' && (
-                    <>
-                        <TrendChart transactions={transactions} />
-                        <ExpenseChart transactions={transactions} />
-                        {transactions.length === 0 && (
-                            <div className="glass-panel empty-state-pad">
-                                <p>📊 還沒有任何紀錄</p>
-                                <p className="sub-text">先到「記帳」分頁新增第一筆吧</p>
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {activeTab === 'report' && (
-                    <ReportView transactions={transactions} />
+                {activeTab === 'analysis' && (
+                    <AnalysisView transactions={transactions} />
                 )}
 
                 {activeTab === 'settings' && (
@@ -300,10 +348,10 @@ function App() {
                 )}
             </main>
 
-            {undoDelete && (
+            {undoAction && (
                 <div className="undo-toast" role="status">
-                    <span>已刪除 1 筆紀錄</span>
-                    <button type="button" onClick={handleUndoDelete}>復原</button>
+                    <span>{undoAction.message}</span>
+                    <button type="button" onClick={handleUndoAction}>復原</button>
                 </div>
             )}
 

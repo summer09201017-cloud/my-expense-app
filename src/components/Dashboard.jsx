@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { Award, BellRing, Check, Edit3, PiggyBank, Target, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+import {
+    Award,
+    BellRing,
+    CalendarClock,
+    Check,
+    Edit3,
+    PiggyBank,
+    Target,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
+    X,
+} from 'lucide-react';
 import './Dashboard.css';
 
 export function Dashboard({
@@ -10,6 +22,7 @@ export function Dashboard({
     categorySpending = {},
     moneyInsights,
     dueRecurringRules = [],
+    recurringSummary,
     onPostRecurring,
 }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -30,8 +43,16 @@ export function Dashboard({
         ratio >= 1 ? 'danger'
         : ratio >= 0.8 ? 'warn'
         : 'ok';
+    const projectedRatio = budget > 0 && moneyInsights
+        ? moneyInsights.projectedExpenseRatio
+        : 0;
+    const projectedLevel =
+        projectedRatio >= 1 ? 'danger'
+        : projectedRatio >= 0.8 ? 'warn'
+        : 'ok';
 
     const remaining = budget - summary.expense;
+    const projectedRemaining = budget - (moneyInsights?.projectedMonthExpense || 0);
     const categoryBudgetRows = Object.entries(categoryBudgets)
         .filter(([, amount]) => Number(amount) > 0)
         .map(([category, amount]) => {
@@ -44,6 +65,20 @@ export function Dashboard({
     const startEdit = () => {
         setDraftBudget(budget);
         setIsEditing(true);
+    };
+
+    const renderComparisonValue = (comparison) => {
+        if (!comparison) return '0%';
+        if (comparison.percent === null) return '新增';
+        return `${comparison.percent >= 0 ? '+' : ''}${comparison.percent}%`;
+    };
+
+    const renderComparisonDetail = (comparison, positiveWord, negativeWord) => {
+        if (!comparison) return '尚無資料';
+        if (comparison.previous === 0 && comparison.current === 0) return '與上月持平';
+        if (comparison.previous === 0) return `比上月多 ${formatMoney(comparison.current)}`;
+        if (comparison.diff === 0) return '與上月持平';
+        return `${comparison.diff > 0 ? positiveWord : negativeWord} ${formatMoney(Math.abs(comparison.diff))}`;
     };
 
     const saveEdit = () => {
@@ -123,18 +158,71 @@ export function Dashboard({
                             <span>剩餘日均可花</span>
                             <strong>{formatMoney(moneyInsights?.dailyAllowance || 0)}</strong>
                         </div>
+                        {moneyInsights && (
+                            <div className={`budget-forecast ${projectedLevel}`}>
+                                <div>
+                                    <span>月底預估支出</span>
+                                    <strong>{formatMoney(moneyInsights.projectedMonthExpense)}</strong>
+                                </div>
+                                <p>
+                                    {projectedRemaining < 0
+                                        ? `照目前速度，可能超支 ${formatMoney(Math.abs(projectedRemaining))}`
+                                        : `照目前速度，月底約可剩 ${formatMoney(projectedRemaining)}`}
+                                </p>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
 
-            {dueRecurringRules.length > 0 && (
+            {recurringSummary?.enabledCount > 0 ? (
+                <div className="dashboard-section recurring-dashboard">
+                    <div className="dashboard-section-title">
+                        <BellRing size={16} />
+                        <span>固定交易儀表板</span>
+                    </div>
+                    <div className="recurring-summary-grid">
+                        <div>
+                            <span>固定支出</span>
+                            <strong>{formatMoney(recurringSummary.expenseTotal)}</strong>
+                        </div>
+                        <div>
+                            <span>固定收入</span>
+                            <strong>{formatMoney(recurringSummary.incomeTotal)}</strong>
+                        </div>
+                        <div className={recurringSummary.dueCount > 0 ? 'warn' : ''}>
+                            <span>待記入</span>
+                            <strong>{recurringSummary.pendingCount}</strong>
+                        </div>
+                    </div>
+                    {recurringSummary.upcomingRules.length > 0 && (
+                        <div className="recurring-mini-list">
+                            {recurringSummary.upcomingRules.map((rule) => (
+                                <div key={rule.id} className={`recurring-reminder-row ${rule.isDue ? 'due' : ''}`}>
+                                    <div>
+                                        <span>{rule.note || rule.category}</span>
+                                        <small>
+                                            {rule.scheduledDate.slice(5)} · {rule.type === 'income' ? '收入' : '支出'} · {formatMoney(rule.amount)}
+                                        </small>
+                                    </div>
+                                    {rule.isDue ? (
+                                        <button type="button" onClick={() => onPostRecurring?.(rule)}>記入</button>
+                                    ) : (
+                                        <em>未到期</em>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ) : dueRecurringRules.length > 0 && (
                 <div className="dashboard-section recurring-reminders">
                     <div className="dashboard-section-title">
                         <BellRing size={16} />
                         <span>固定交易提醒</span>
                     </div>
                     {dueRecurringRules.map((rule) => (
-                        <div key={rule.id} className="recurring-reminder-row">
+                        <div key={rule.id} className="recurring-reminder-row due">
                             <span>{rule.note || rule.category} · {formatMoney(rule.amount)}</span>
                             <button type="button" onClick={() => onPostRecurring?.(rule)}>記入</button>
                         </div>
@@ -187,6 +275,27 @@ export function Dashboard({
                     </div>
                 </div>
             </div>
+
+            {moneyInsights && (
+                <div className="dashboard-section month-compare-section">
+                    <div className="dashboard-section-title">
+                        <CalendarClock size={16} />
+                        <span>本月 vs 上月</span>
+                    </div>
+                    <div className="month-compare-grid">
+                        <div className={`month-compare-card ${moneyInsights.monthComparison.expense.diff > 0 ? 'bad' : moneyInsights.monthComparison.expense.diff < 0 ? 'good' : ''}`}>
+                            <span>支出變化</span>
+                            <strong>{renderComparisonValue(moneyInsights.monthComparison.expense)}</strong>
+                            <small>{renderComparisonDetail(moneyInsights.monthComparison.expense, '多花', '少花')}</small>
+                        </div>
+                        <div className={`month-compare-card ${moneyInsights.monthComparison.income.diff > 0 ? 'good' : moneyInsights.monthComparison.income.diff < 0 ? 'bad' : ''}`}>
+                            <span>收入變化</span>
+                            <strong>{renderComparisonValue(moneyInsights.monthComparison.income)}</strong>
+                            <small>{renderComparisonDetail(moneyInsights.monthComparison.income, '增加', '減少')}</small>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {moneyInsights && (
                 <div className="dashboard-section habit-section">

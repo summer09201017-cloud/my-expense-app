@@ -123,6 +123,11 @@ body {
   color: var(--accent-color);
 }
 
+.toolbar-btn.active {
+  color: white;
+  background: var(--accent-color);
+}
+
 .install-toolbar-btn {
   color: var(--income-color);
 }
