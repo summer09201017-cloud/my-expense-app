@@ -42,7 +42,7 @@
 }
 
 .cal-title:hover {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
     color: var(--accent-color);
 }
 
@@ -112,7 +112,7 @@
 }
 
 .cal-cell:hover {
-    background: rgba(59, 130, 246, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
 }
 
 .cal-cell.heat-1 {

@@ -103,7 +103,7 @@
 }
 
 .icon-cell:hover {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(var(--accent-rgb), 0.15);
     transform: scale(1.08);
 }
 
@@ -120,7 +120,7 @@
 }
 
 :root[data-theme="dark"] .icon-cell:hover {
-    background: rgba(59, 130, 246, 0.25);
+    background: rgba(var(--accent-rgb), 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -129,7 +129,7 @@
         background: rgba(255, 255, 255, 0.06);
     }
     :root:not([data-theme="light"]) .icon-cell:hover {
-        background: rgba(59, 130, 246, 0.25);
+        background: rgba(var(--accent-rgb), 0.25);
     }
 }
 
@@ -183,7 +183,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 3px 10px rgba(var(--accent-rgb), 0.35);
 }
 
 .add-cat-confirm:disabled {

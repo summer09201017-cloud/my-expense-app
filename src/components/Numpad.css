@@ -42,7 +42,7 @@
 }
 
 .numpad .key-op {
-    background: rgba(59, 130, 246, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
     color: var(--accent-color);
     font-weight: 700;
 }
@@ -76,7 +76,7 @@
     color: white;
     grid-column: span 2;
     font-size: 1rem;
-    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 3px 10px rgba(var(--accent-rgb), 0.35);
 }
 
 :root[data-theme="dark"] .numpad .key {

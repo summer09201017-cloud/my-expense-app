@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+    Camera,
     Check,
     Hash,
     Keyboard,
+    Mic,
+    MicOff,
     MinusCircle,
     PlusCircle,
+    QrCode,
     Repeat,
     Save,
+    Sparkles,
     Trash2,
     X,
     Zap,
@@ -16,7 +21,9 @@ import { useQuickTemplates } from '../hooks/useQuickTemplates';
 import { Numpad } from './Numpad';
 import { AddCategoryDialog } from './IconPicker';
 import { joinCategory } from '../utils/icons';
+import { parseSpokenTransaction, suggestCategoryFromText } from '../utils/categorySuggestions';
 import { toLocalDateString } from '../utils/date';
+import { parseTaiwanInvoiceQr } from '../utils/taiwanInvoice';
 import './TransactionForm.css';
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
@@ -30,11 +37,27 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
     const [continuousMode, setContinuousMode] = useState(() => localStorage.getItem('continuous_mode') === '1');
     const [useNumpad, setUseNumpad] = useState(() => localStorage.getItem('numpad_mode') !== '0');
     const [justSaved, setJustSaved] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [voiceMessage, setVoiceMessage] = useState('');
+    const [showInvoiceScanner, setShowInvoiceScanner] = useState(false);
+    const [scanMessage, setScanMessage] = useState('');
 
     const localCategoriesState = useCategories();
     const { categories, addCategory, deleteCategory } = categoriesState || localCategoriesState;
     const { templates, addTemplate, deleteTemplate } = useQuickTemplates();
     const [showAddCategory, setShowAddCategory] = useState(false);
+    const recognitionRef = useRef(null);
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
+    const scannerFrameRef = useRef(null);
+    const barcodeDetectorRef = useRef(null);
+
+    const categorySuggestion = useMemo(
+        () => suggestCategoryFromText(note, categories),
+        [note, categories]
+    );
+    const speechSupported = typeof window !== 'undefined'
+        && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
     useEffect(() => {
         localStorage.setItem('continuous_mode', continuousMode ? '1' : '0');
@@ -80,6 +103,169 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
         setJustSaved(true);
         setTimeout(() => setJustSaved(false), 1200);
     };
+
+    const applyParsedTransaction = (parsed) => {
+        if (!parsed) return;
+        if (parsed.type) setType(parsed.type);
+        if (parsed.amount) setAmount(String(parsed.amount));
+        if (parsed.date) setDate(parsed.date);
+        if (parsed.note) setNote(parsed.note);
+        if (parsed.category) setCategory(parsed.category);
+    };
+
+    const applyCategorySuggestion = (suggestion = categorySuggestion) => {
+        if (!suggestion?.category) return;
+        setType(suggestion.type);
+        setCategory(suggestion.category);
+    };
+
+    const handleVoiceInput = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            setVoiceMessage('這個瀏覽器目前不支援語音輸入');
+            return;
+        }
+
+        if (isListening) {
+            recognitionRef.current?.stop();
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'zh-TW';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognitionRef.current = recognition;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+            setVoiceMessage('正在聽...');
+        };
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+        recognition.onerror = () => {
+            setVoiceMessage('語音辨識失敗，請再試一次');
+        };
+        recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map((result) => result[0]?.transcript || '')
+                .join('')
+                .trim();
+            const parsed = parseSpokenTransaction(transcript, categories);
+            applyParsedTransaction(parsed);
+            setVoiceMessage(transcript ? `聽到：${transcript}` : '沒有聽到內容');
+        };
+
+        recognition.start();
+    };
+
+    const stopInvoiceScanner = () => {
+        if (scannerFrameRef.current) {
+            cancelAnimationFrame(scannerFrameRef.current);
+            scannerFrameRef.current = null;
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+    };
+
+    const handleCloseInvoiceScanner = () => {
+        stopInvoiceScanner();
+        setShowInvoiceScanner(false);
+    };
+
+    const applyInvoice = (invoice) => {
+        const suggestion = suggestCategoryFromText(invoice.note, categories);
+        setType('expense');
+        setAmount(String(invoice.amount));
+        setDate(invoice.date);
+        setNote(invoice.note);
+        if (suggestion?.category) {
+            setCategory(suggestion.category);
+        }
+        setScanMessage(`已掃描 ${invoice.invoiceNumber}`);
+    };
+
+    const scanInvoiceFrame = async () => {
+        const detector = barcodeDetectorRef.current;
+        const video = videoRef.current;
+        if (!detector || !video || video.readyState < 2) {
+            scannerFrameRef.current = requestAnimationFrame(scanInvoiceFrame);
+            return;
+        }
+
+        try {
+            const barcodes = await detector.detect(video);
+            const invoice = barcodes
+                .map((barcode) => parseTaiwanInvoiceQr(barcode.rawValue))
+                .find(Boolean);
+
+            if (invoice) {
+                applyInvoice(invoice);
+                handleCloseInvoiceScanner();
+                return;
+            }
+        } catch (error) {
+            setScanMessage(`掃描失敗：${error.message}`);
+        }
+
+        scannerFrameRef.current = requestAnimationFrame(scanInvoiceFrame);
+    };
+
+    const handleInvoiceScan = async () => {
+        setShowInvoiceScanner(true);
+        setScanMessage('正在開啟相機...');
+
+        if (!('BarcodeDetector' in window)) {
+            setScanMessage('這個瀏覽器目前不支援 QR 掃描，建議用 Android Chrome / Edge');
+            return;
+        }
+        if (!navigator.mediaDevices?.getUserMedia) {
+            setScanMessage('無法使用相機');
+            return;
+        }
+
+        try {
+            const supportedFormats = window.BarcodeDetector.getSupportedFormats
+                ? await window.BarcodeDetector.getSupportedFormats()
+                : ['qr_code'];
+            if (!supportedFormats.includes('qr_code')) {
+                setScanMessage('此裝置的 BarcodeDetector 不支援 QR Code');
+                return;
+            }
+
+            barcodeDetectorRef.current = new window.BarcodeDetector({ formats: ['qr_code'] });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' } },
+                audio: false,
+            });
+            streamRef.current = stream;
+            videoRef.current.srcObject = stream;
+            await videoRef.current.play();
+            setScanMessage('請對準電子發票左側 QR Code');
+            scannerFrameRef.current = requestAnimationFrame(scanInvoiceFrame);
+        } catch (error) {
+            setScanMessage(`無法啟動相機：${error.message}`);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            recognitionRef.current?.abort?.();
+            if (scannerFrameRef.current) {
+                cancelAnimationFrame(scannerFrameRef.current);
+            }
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach((track) => track.stop());
+            }
+        };
+    }, []);
 
     const handleAddCategory = ({ icon, name }) => {
         const joined = joinCategory(icon, name);
@@ -264,6 +450,28 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                 )}
             </div>
 
+            <div className="smart-entry-row">
+                <button
+                    type="button"
+                    className={`smart-entry-btn ${isListening ? 'active' : ''}`}
+                    onClick={handleVoiceInput}
+                    title={speechSupported ? '語音輸入' : '這個瀏覽器不支援語音輸入'}
+                >
+                    {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                    <span>{isListening ? '停止' : '語音'}</span>
+                </button>
+                <button
+                    type="button"
+                    className="smart-entry-btn"
+                    onClick={handleInvoiceScan}
+                    title="掃描台灣電子發票 QR Code"
+                >
+                    <QrCode size={16} />
+                    <span>掃發票</span>
+                </button>
+                {voiceMessage && <span className="smart-entry-message">{voiceMessage}</span>}
+            </div>
+
             {useNumpad && (
                 <Numpad
                     value={amount}
@@ -332,6 +540,18 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                 </div>
             </div>
 
+            {categorySuggestion && categorySuggestion.category !== category && (
+                <button
+                    type="button"
+                    className="category-suggestion"
+                    onClick={() => applyCategorySuggestion(categorySuggestion)}
+                >
+                    <Sparkles size={16} />
+                    <span>建議分類：{categorySuggestion.category}</span>
+                    <strong>{categorySuggestion.label}</strong>
+                </button>
+            )}
+
             {!editingTransaction && (
                 <div className="form-options">
                     <label className={`continuous-toggle ${continuousMode ? 'active' : ''}`} title="開啟後送出仍保留分類與日期，方便連續輸入">
@@ -364,6 +584,27 @@ export function TransactionForm({ onAdd, editingTransaction, prefillTransaction,
                     {justSaved ? <><Check size={18} /> 已新增</> : (editingTransaction ? '儲存修改' : '新增紀錄')}
                 </button>
             </div>
+
+            {showInvoiceScanner && (
+                <div className="scanner-backdrop" role="dialog" aria-modal="true">
+                    <div className="scanner-dialog glass-panel">
+                        <div className="scanner-header">
+                            <div>
+                                <strong>掃描電子發票</strong>
+                                <span>對準左側 QR Code</span>
+                            </div>
+                            <button type="button" onClick={handleCloseInvoiceScanner} title="關閉">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="scanner-video-frame">
+                            <video ref={videoRef} muted playsInline />
+                            <Camera size={28} />
+                        </div>
+                        <p>{scanMessage}</p>
+                    </div>
+                </div>
+            )}
 
             {showAddCategory && (
                 <AddCategoryDialog

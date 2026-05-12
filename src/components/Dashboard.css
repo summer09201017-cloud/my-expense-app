@@ -228,7 +228,8 @@
     font-size: 1rem;
 }
 
-.budget-forecast {
+.budget-forecast,
+.next-month-forecast {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -237,7 +238,8 @@
     background: rgba(255, 255, 255, 0.12);
 }
 
-.budget-forecast div {
+.budget-forecast div,
+.next-month-forecast div {
     display: flex;
     justify-content: space-between;
     gap: 0.75rem;
@@ -245,18 +247,26 @@
 }
 
 .budget-forecast span,
-.budget-forecast p {
+.budget-forecast p,
+.next-month-forecast span,
+.next-month-forecast p {
     font-size: 0.8rem;
     opacity: 0.9;
 }
 
-.budget-forecast strong {
+.budget-forecast strong,
+.next-month-forecast strong {
     font-size: 1rem;
 }
 
-.budget-forecast p {
+.budget-forecast p,
+.next-month-forecast p {
     margin: 0;
     font-weight: 700;
+}
+
+.next-month-forecast {
+    background: rgba(255, 255, 255, 0.18);
 }
 
 .budget-forecast.warn p {

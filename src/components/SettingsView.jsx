@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
     BellRing,
     Check,
+    Droplet,
     Monitor,
     Moon,
     Palette,
@@ -11,6 +12,7 @@ import {
     Trash2,
     WalletCards,
 } from 'lucide-react';
+import { ACCENT_COLORS } from '../hooks/useAccentColor';
 import './SettingsView.css';
 
 const formatMoney = (amount) => new Intl.NumberFormat('zh-TW', {
@@ -28,6 +30,8 @@ const themeOptions = [
 export function SettingsView({
     theme,
     setTheme,
+    accent,
+    setAccent,
     pwa,
     categories,
     categoryBudgets,
@@ -90,6 +94,33 @@ export function SettingsView({
                             </button>
                         );
                     })}
+                </div>
+
+                <div className="accent-section" role="group" aria-label="主題色">
+                    <div className="accent-section-label">
+                        <Droplet size={14} />
+                        <span>主題色</span>
+                        <small>
+                            {ACCENT_COLORS.find((c) => c.key === accent)?.label || ''}
+                        </small>
+                    </div>
+                    <div className="accent-grid">
+                        {ACCENT_COLORS.map((c) => (
+                            <button
+                                key={c.key}
+                                type="button"
+                                className={`accent-swatch ${accent === c.key ? 'active' : ''}`}
+                                style={{
+                                    background: `linear-gradient(135deg, rgb(${c.primary}) 0%, rgb(${c.secondary}) 100%)`,
+                                }}
+                                onClick={() => setAccent(c.key)}
+                                aria-label={c.label}
+                                title={c.label}
+                            >
+                                {accent === c.key && <Check size={16} strokeWidth={3} />}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="pwa-panel">

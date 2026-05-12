@@ -50,6 +50,10 @@ export function Dashboard({
         projectedRatio >= 1 ? 'danger'
         : projectedRatio >= 0.8 ? 'warn'
         : 'ok';
+    const nextMonthForecast = moneyInsights?.nextMonthExpenseForecast;
+    const seasonalFactorLabel = nextMonthForecast
+        ? `${Math.round(nextMonthForecast.seasonalFactor * 100)}%`
+        : '100%';
 
     const remaining = budget - summary.expense;
     const projectedRemaining = budget - (moneyInsights?.projectedMonthExpense || 0);
@@ -174,6 +178,18 @@ export function Dashboard({
                     </>
                 )}
             </div>
+
+            {nextMonthForecast && nextMonthForecast.amount > 0 && (
+                <div className="dashboard-section next-month-forecast">
+                    <div>
+                        <span>下月支出預測</span>
+                        <strong>{formatMoney(nextMonthForecast.amount)}</strong>
+                    </div>
+                    <p>
+                        近三月平均 {formatMoney(nextMonthForecast.average)} × 季節因子 {seasonalFactorLabel}
+                    </p>
+                </div>
+            )}
 
             {recurringSummary?.enabledCount > 0 ? (
                 <div className="dashboard-section recurring-dashboard">

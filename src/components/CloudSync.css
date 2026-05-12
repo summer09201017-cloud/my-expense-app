@@ -112,11 +112,11 @@
 }
 
 .sync-btn.backup {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
     color: var(--accent-color);
 }
 .sync-btn.backup:hover:not(:disabled) {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(var(--accent-rgb), 0.2);
 }
 
 .sync-btn.restore {

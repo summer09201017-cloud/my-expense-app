@@ -46,6 +46,13 @@ export const useTransactions = () => {
         return deleted || null;
     };
 
+    const deleteTransactions = (ids) => {
+        const idSet = new Set(ids);
+        const deleted = transactions.filter(t => idSet.has(t.id));
+        setTransactions(prev => prev.filter(t => !idSet.has(t.id)));
+        return deleted;
+    };
+
     // 更新交易
     const updateTransaction = (id, updatedData) => {
         const previous = transactions.find(t => t.id === id) || null;
@@ -53,6 +60,20 @@ export const useTransactions = () => {
             t.id === id ? { ...t, ...updatedData } : t
         ));
         return previous;
+    };
+
+    const updateTransactionsCategory = (ids, category) => {
+        const idSet = new Set(ids);
+        const previous = transactions.filter(t => idSet.has(t.id));
+        setTransactions(prev => prev.map(t =>
+            idSet.has(t.id) ? { ...t, category } : t
+        ));
+        return previous;
+    };
+
+    const restoreTransactionSnapshots = (snapshots) => {
+        const snapshotMap = new Map(snapshots.map(t => [t.id, t]));
+        setTransactions(prev => prev.map(t => snapshotMap.get(t.id) || t));
     };
 
     // 從雲端還原（覆蓋）所有交易
@@ -102,7 +123,10 @@ export const useTransactions = () => {
         transactions,
         addTransaction,
         deleteTransaction,
+        deleteTransactions,
         updateTransaction,
+        updateTransactionsCategory,
+        restoreTransactionSnapshots,
         restoreTransactions,
         mergeTransactions,
         summary

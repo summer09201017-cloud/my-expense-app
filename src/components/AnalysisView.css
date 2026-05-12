@@ -25,7 +25,7 @@
 
 .analysis-switch-btn:hover {
     color: var(--accent-color);
-    background: rgba(59, 130, 246, 0.08);
+    background: rgba(var(--accent-rgb), 0.08);
 }
 
 .analysis-switch-btn.active {

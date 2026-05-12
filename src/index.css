@@ -4,7 +4,12 @@
   --text-primary: #0f172a;
   --text-secondary: #64748b;
   --accent-color: #3b82f6;
+  --accent-secondary: #8b5cf6;
+  --accent-rgb: 59, 130, 246;
+  --accent-secondary-rgb: 139, 92, 246;
   --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --bg-glow-1: rgba(59, 130, 246, 0.15);
+  --bg-glow-2: rgba(139, 92, 246, 0.15);
   --income-color: #10b981;
   --expense-color: #ef4444;
   --border-color: rgba(100, 116, 139, 0.18);
@@ -48,8 +53,8 @@ body {
   font-family: 'Inter', -apple-system, system-ui, sans-serif;
   background-color: var(--bg-primary);
   background-image:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 400px),
-    radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.15), transparent 400px);
+    radial-gradient(circle at top right, var(--bg-glow-1), transparent 400px),
+    radial-gradient(circle at bottom left, var(--bg-glow-2), transparent 400px);
   background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
@@ -154,7 +159,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.35), 0 4px 8px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 24px rgba(var(--accent-rgb), 0.35), 0 4px 8px rgba(15, 23, 42, 0.12);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: fabPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -162,7 +167,7 @@ body {
 .fab-add:hover,
 .fab-add:focus-visible {
   transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 14px 32px rgba(59, 130, 246, 0.42), 0 6px 12px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 14px 32px rgba(var(--accent-rgb), 0.42), 0 6px 12px rgba(15, 23, 42, 0.15);
   outline: none;
 }
 

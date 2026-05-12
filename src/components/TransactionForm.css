@@ -102,7 +102,7 @@
 }
 
 .kb-toggle:hover {
-    background: rgba(59, 130, 246, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
     color: var(--accent-color);
 }
 
@@ -148,7 +148,7 @@
     border-radius: 1rem;
     font-size: 1.1rem;
     font-weight: 600;
-    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+    box-shadow: 0 4px 14px 0 rgba(var(--accent-rgb), 0.39);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
     margin-top: 0.5rem;
     display: inline-flex;
@@ -164,7 +164,7 @@
 
 .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.4);
 }
 
 .submit-btn:active {
@@ -206,13 +206,146 @@
     transform: none;
 }
 
+.smart-entry-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: -0.35rem;
+}
+
+.smart-entry-btn,
+.category-suggestion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 0.8rem;
+    font-weight: 800;
+    transition: all 0.2s ease;
+}
+
+.smart-entry-btn {
+    padding: 0.55rem 0.75rem;
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent-color);
+}
+
+.smart-entry-btn:hover,
+.smart-entry-btn.active,
+.category-suggestion:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.smart-entry-message {
+    min-width: 0;
+    flex: 1;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-suggestion {
+    align-self: flex-start;
+    padding: 0.65rem 0.85rem;
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent-color);
+}
+
+.category-suggestion strong {
+    color: inherit;
+    font-size: 0.78rem;
+    opacity: 0.8;
+}
+
+.scanner-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.scanner-dialog {
+    width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.scanner-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.scanner-header div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.scanner-header strong {
+    color: var(--text-primary);
+}
+
+.scanner-header span,
+.scanner-dialog p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.scanner-header button {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.6rem;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.scanner-video-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: 0.8rem;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.scanner-video-frame video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.scanner-video-frame > svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    color: rgba(255, 255, 255, 0.75);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
 .template-section {
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
     padding: 0.85rem;
     border-radius: 1rem;
-    background: rgba(59, 130, 246, 0.08);
+    background: rgba(var(--accent-rgb), 0.08);
 }
 
 .template-header,
@@ -242,7 +375,7 @@
 .save-template-inline {
     padding: 0.45rem 0.7rem;
     border-radius: 0.7rem;
-    background: rgba(59, 130, 246, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
     color: var(--accent-color);
     font-weight: 800;
     font-size: 0.82rem;
@@ -333,7 +466,7 @@
 }
 
 .continuous-toggle.active {
-    background: rgba(59, 130, 246, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
     color: var(--accent-color);
 }
 
@@ -341,7 +474,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
     color: var(--accent-color);
     padding: 0.75rem 1rem;
     border-radius: calc(var(--border-radius) - 0.5rem);

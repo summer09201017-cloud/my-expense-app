@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Download, Monitor, Moon, Plus, Settings, Smartphone, Sun, Upload } from 'lucide-react';
 import { useTransactions } from './hooks/useTransactions';
 import { useTheme } from './hooks/useTheme';
@@ -7,6 +7,7 @@ import { useCategories } from './hooks/useCategories';
 import { useCategoryBudgets } from './hooks/useCategoryBudgets';
 import { useRecurringTransactions } from './hooks/useRecurringTransactions';
 import { usePwaInstall } from './hooks/usePwaInstall';
+import { useAccentColor } from './hooks/useAccentColor';
 import { AnalysisView } from './components/AnalysisView';
 import { Dashboard } from './components/Dashboard';
 import { TransactionForm } from './components/TransactionForm';
@@ -20,8 +21,20 @@ import { getCategorySpending, getMoneyInsights } from './utils/financeStats';
 import { localDateForMonthDay, toLocalDateString, toLocalMonthString } from './utils/date';
 
 function App() {
-    const { transactions, addTransaction, deleteTransaction, updateTransaction, restoreTransactions, mergeTransactions, summary } = useTransactions();
+    const {
+        transactions,
+        addTransaction,
+        deleteTransaction,
+        deleteTransactions,
+        updateTransaction,
+        updateTransactionsCategory,
+        restoreTransactionSnapshots,
+        restoreTransactions,
+        mergeTransactions,
+        summary,
+    } = useTransactions();
     const { theme, setTheme, cycleTheme } = useTheme();
+    const { accent, setAccent } = useAccentColor();
     const { budget, setBudget } = useBudget();
     const categoriesState = useCategories();
     const { categoryBudgets, setCategoryBudget } = useCategoryBudgets();
@@ -37,6 +50,7 @@ function App() {
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [prefillTransaction, setPrefillTransaction] = useState(null);
     const [activeTab, setActiveTab] = useState('add');
+    const [focusSearchRequest, setFocusSearchRequest] = useState(0);
     const [undoAction, setUndoAction] = useState(null);
     const undoTimerRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -92,6 +106,74 @@ function App() {
         };
     }, [scheduledRecurringRules, dueRecurringRules]);
 
+    useEffect(() => {
+        const isTypingTarget = (target) => {
+            const tagName = target?.tagName?.toLowerCase();
+            return tagName === 'input'
+                || tagName === 'textarea'
+                || tagName === 'select'
+                || target?.isContentEditable;
+        };
+
+        const tabMap = {
+            1: 'add',
+            2: 'list',
+            3: 'calendar',
+            4: 'analysis',
+        };
+
+        const onKeyDown = (event) => {
+            if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+            if (event.key === 'Escape') {
+                setEditingTransaction(null);
+                setPrefillTransaction(null);
+                return;
+            }
+
+            if (isTypingTarget(event.target)) return;
+
+            if (event.key.toLowerCase() === 'n') {
+                setEditingTransaction(null);
+                setPrefillTransaction(null);
+                setActiveTab('add');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            if (event.key === '/') {
+                event.preventDefault();
+                setActiveTab('list');
+                setFocusSearchRequest(Date.now());
+                return;
+            }
+
+            if (tabMap[event.key]) {
+                event.preventDefault();
+                setActiveTab(tabMap[event.key]);
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, []);
+
+    useEffect(() => {
+        const updateBadge = async () => {
+            try {
+                if (dueRecurringRules.length > 0 && 'setAppBadge' in navigator) {
+                    await navigator.setAppBadge(dueRecurringRules.length);
+                } else if ('clearAppBadge' in navigator) {
+                    await navigator.clearAppBadge();
+                }
+            } catch (error) {
+                console.debug('Unable to update PWA badge', error);
+            }
+        };
+
+        updateBadge();
+    }, [dueRecurringRules.length]);
+
     const showUndoAction = (action) => {
         window.clearTimeout(undoTimerRef.current);
         setUndoAction(action);
@@ -133,6 +215,19 @@ function App() {
         });
     };
 
+    const handleBulkDelete = (ids) => {
+        if (ids.length === 0) return;
+        if (!window.confirm(`確定刪除 ${ids.length} 筆交易？`)) return;
+
+        const deleted = deleteTransactions(ids);
+        if (!deleted.length) return;
+        showUndoAction({
+            type: 'bulk-delete',
+            transactions: deleted,
+            message: `已刪除 ${deleted.length} 筆交易`,
+        });
+    };
+
     const handleUpdateTransaction = (id, updatedData) => {
         const previous = updateTransaction(id, updatedData);
         if (!previous) return;
@@ -143,6 +238,17 @@ function App() {
         });
     };
 
+    const handleBulkChangeCategory = (ids, category) => {
+        if (ids.length === 0 || !category) return;
+        const previous = updateTransactionsCategory(ids, category);
+        if (!previous.length) return;
+        showUndoAction({
+            type: 'bulk-edit',
+            transactions: previous,
+            message: `已改分類 ${previous.length} 筆交易`,
+        });
+    };
+
     const handleUndoAction = () => {
         if (!undoAction) return;
         if (undoAction.type === 'delete') {
@@ -150,6 +256,12 @@ function App() {
         }
         if (undoAction.type === 'edit') {
             updateTransaction(undoAction.transaction.id, undoAction.transaction);
+        }
+        if (undoAction.type === 'bulk-delete') {
+            mergeTransactions(undoAction.transactions);
+        }
+        if (undoAction.type === 'bulk-edit') {
+            restoreTransactionSnapshots(undoAction.transactions);
         }
         window.clearTimeout(undoTimerRef.current);
         setUndoAction(null);
@@ -316,6 +428,10 @@ function App() {
                         onDelete={handleDelete}
                         onCopy={handleCopy}
                         onEdit={handleEdit}
+                        onBulkDelete={handleBulkDelete}
+                        onBulkChangeCategory={handleBulkChangeCategory}
+                        categoriesState={categoriesState}
+                        focusSearchRequest={focusSearchRequest}
                     />
                 )}
 
@@ -336,6 +452,8 @@ function App() {
                     <SettingsView
                         theme={theme}
                         setTheme={setTheme}
+                        accent={accent}
+                        setAccent={setAccent}
                         pwa={pwa}
                         categories={categoriesState.categories}
                         categoryBudgets={categoryBudgets}
