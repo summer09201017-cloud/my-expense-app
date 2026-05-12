@@ -43,6 +43,16 @@ export function Dashboard({
         ratio >= 1 ? 'danger'
         : ratio >= 0.8 ? 'warn'
         : 'ok';
+    const budgetSprite =
+        percent < 50 ? '🤩'
+        : percent < 80 ? '🙂'
+        : percent <= 100 ? '😰'
+        : '😭';
+    const budgetSpriteLabel =
+        percent < 50 ? '開心'
+        : percent < 80 ? '平靜'
+        : percent <= 100 ? '流汗緊張'
+        : '超支吃土';
     const projectedRatio = budget > 0 && moneyInsights
         ? moneyInsights.projectedExpenseRatio
         : 0;
@@ -143,11 +153,22 @@ export function Dashboard({
 
                 {budget > 0 && (
                     <>
-                        <div className={`budget-bar ${warningLevel}`}>
-                            <div
-                                className="budget-bar-fill"
-                                style={{ width: `${Math.min(percent, 100)}%` }}
-                            />
+                        <div id="budgetStatus" className="budget-status-row">
+                            <div className={`budget-bar ${warningLevel}`}>
+                                <div
+                                    className="budget-bar-fill"
+                                    style={{ width: `${Math.min(percent, 100)}%` }}
+                                />
+                            </div>
+                            <span
+                                id="budgetSprite"
+                                className={`budget-sprite ${warningLevel}`}
+                                role="img"
+                                aria-label={`預算小精靈：${budgetSpriteLabel}`}
+                                title={`預算小精靈：${budgetSpriteLabel}`}
+                            >
+                                {budgetSprite}
+                            </span>
                         </div>
                         <div className="budget-meta">
                             <span>{percent}% 已用</span>
