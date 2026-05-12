@@ -8,6 +8,7 @@ import { useCategoryBudgets } from './hooks/useCategoryBudgets';
 import { useRecurringTransactions } from './hooks/useRecurringTransactions';
 import { usePwaInstall } from './hooks/usePwaInstall';
 import { useAccentColor } from './hooks/useAccentColor';
+import { useVersionUpdate } from './hooks/useVersionUpdate';
 import { AnalysisView } from './components/AnalysisView';
 import { Dashboard } from './components/Dashboard';
 import { TransactionForm } from './components/TransactionForm';
@@ -46,6 +47,7 @@ function App() {
         markRecurringPosted,
     } = useRecurringTransactions();
     const pwa = usePwaInstall();
+    const versionUpdate = useVersionUpdate();
 
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [prefillTransaction, setPrefillTransaction] = useState(null);
@@ -488,6 +490,21 @@ function App() {
                 <div className="undo-toast" role="status">
                     <span>{undoAction.message}</span>
                     <button type="button" onClick={handleUndoAction}>復原</button>
+                </div>
+            )}
+
+            {versionUpdate.needRefresh && (
+                <div className="version-toast" role="status">
+                    <div className="version-toast-text">
+                        <strong>新版本已準備好</strong>
+                        <span>更新後會重新載入，使用最新功能與快取。</span>
+                    </div>
+                    <button type="button" className="update-now-btn" onClick={versionUpdate.applyUpdate}>
+                        立即更新
+                    </button>
+                    <button type="button" className="update-later-btn" onClick={versionUpdate.dismissUpdate}>
+                        稍後
+                    </button>
                 </div>
             )}
 

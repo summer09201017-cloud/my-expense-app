@@ -47,7 +47,8 @@ src/
 │   ├── useCategoryBudgets.js  # 各支出分類的月預算
 │   ├── useQuickTemplates.js   # 常用模板一鍵記帳
 │   ├── useRecurringTransactions.js # 每月固定交易 / 訂閱提醒
-│   └── usePwaInstall.js       # beforeinstallprompt + PWA 安裝狀態
+│   ├── usePwaInstall.js       # beforeinstallprompt + PWA 安裝狀態
+│   └── useVersionUpdate.js    # PWA 新版本可用時顯示更新提示
 └── utils/
     ├── csv.js                 # RFC4180 CSV 解析器，把匯出檔反向轉回 transactions
     ├── date.js                # 本地日期工具，避免 toISOString 造成台灣時區日期跑掉
@@ -66,7 +67,7 @@ LocalStorage keys：
 - `categories` — `{ income: string[], expense: string[] }`
 - `categories_defaults_version` — 預設分類遷移版號（目前為 `4`，由 `src/utils/migrations.js` 管理；升級時會重命名舊預設、把新 V4 預設併入清單，並同步改寫 `transactions` / `quick_templates` / `recurring_transactions` / `category_budgets` 內所有引用到的舊分類字串）
 - `theme` — `'light' | 'dark' | 'system'`
-- `accent_color` — 主題色 key（`blue` / `purple` / `pink` / `red` / `orange` / `green` / `teal` / `indigo`）
+- `accent_color` — 主題色 key 或自訂色碼（例如 `blue` / `teal` / `space` / `custom:#14B8A6`）
 - `monthly_budget` — 數字字串
 - `category_budgets` — `{ [category: string]: number }`
 - `quick_templates` — 常用模板陣列，提供一鍵記帳
@@ -109,7 +110,7 @@ LocalStorage keys：
 
 `useTheme.js` 透過 `document.documentElement.dataset.theme` 控制。使用者可在頂部工具列循環切換，也可在「設定」分頁看到完整的淺色 / 深色 / 跟隨系統三段控制。
 
-PWA 安裝狀態在「設定」分頁顯示，`usePwaInstall.js` 會攔截 `beforeinstallprompt`，可安裝時會提供明確的安裝按鈕。
+PWA 安裝狀態在「設定」分頁顯示，`usePwaInstall.js` 會攔截 `beforeinstallprompt`，可安裝時會提供明確的安裝按鈕。`useVersionUpdate.js` 透過 `virtual:pwa-register` 提供新版可用提示，由使用者按「立即更新」後套用新 service worker。
 
 ### 表單注入流程
 TransactionForm 接收兩種注入：
@@ -201,6 +202,7 @@ ID,類型,金額,分類,日期,備註,建立時間
 - 三段主題（淺色 / 深色 / 跟隨系統）
 - 工具列即時切換 + 設定頁完整三段控制
 - PWA 安裝按鈕（攔 `beforeinstallprompt`）+ service worker
+- PWA 版本更新提醒：新版 service worker waiting 時顯示「立即更新 / 稍後」
 - 行動裝置橫看安全區（safe-area-inset-left/right）+ 極窄螢幕 TabBar 緊湊樣式
 
 ### 🟢 待做：高 CP 值（半天內）

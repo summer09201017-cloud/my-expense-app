@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     BellRing,
     Check,
@@ -12,7 +12,12 @@ import {
     Trash2,
     WalletCards,
 } from 'lucide-react';
-import { ACCENT_COLORS } from '../hooks/useAccentColor';
+import {
+    ACCENT_COLORS,
+    getAccentConfig,
+    getCustomHex,
+    toCustomAccentValue,
+} from '../hooks/useAccentColor';
 import './SettingsView.css';
 
 const formatMoney = (amount) => new Intl.NumberFormat('zh-TW', {
@@ -47,10 +52,17 @@ export function SettingsView({
     const [ruleCategory, setRuleCategory] = useState(categories.expense[0] || '');
     const [ruleNote, setRuleNote] = useState('');
     const [ruleDay, setRuleDay] = useState(1);
+    const accentConfig = useMemo(() => getAccentConfig(accent), [accent]);
+    const customHex = getCustomHex(accent);
 
     const handleRuleTypeChange = (nextType) => {
         setRuleType(nextType);
         setRuleCategory(categories[nextType][0] || '');
+    };
+
+    const handleCustomColorChange = (event) => {
+        const next = toCustomAccentValue(event.target.value);
+        if (next) setAccent(next);
     };
 
     const handleAddRule = (event) => {
@@ -63,7 +75,7 @@ export function SettingsView({
             dayOfMonth: ruleDay,
         });
         if (!ok) {
-            alert('請輸入有效的固定交易內容');
+            alert('請輸入有效金額與固定交易資料');
             return;
         }
         setRuleAmount('');
@@ -79,7 +91,7 @@ export function SettingsView({
                     <h3>外觀與 PWA</h3>
                 </div>
 
-                <div className="theme-segment" role="group" aria-label="主題模式">
+                <div className="theme-segment" role="group" aria-label="色彩模式">
                     {themeOptions.map((option) => {
                         const ThemeChoiceIcon = option.Icon;
                         return (
@@ -100,27 +112,41 @@ export function SettingsView({
                     <div className="accent-section-label">
                         <Droplet size={14} />
                         <span>主題色</span>
-                        <small>
-                            {ACCENT_COLORS.find((c) => c.key === accent)?.label || ''}
-                        </small>
+                        <small>{accentConfig.label}</small>
                     </div>
                     <div className="accent-grid">
-                        {ACCENT_COLORS.map((c) => (
+                        {ACCENT_COLORS.map((color) => (
                             <button
-                                key={c.key}
+                                key={color.key}
                                 type="button"
-                                className={`accent-swatch ${accent === c.key ? 'active' : ''}`}
+                                className={`accent-swatch ${accent === color.key ? 'active' : ''}`}
                                 style={{
-                                    background: `linear-gradient(135deg, rgb(${c.primary}) 0%, rgb(${c.secondary}) 100%)`,
+                                    background: `linear-gradient(135deg, rgb(${color.primary}) 0%, rgb(${color.secondary}) 100%)`,
                                 }}
-                                onClick={() => setAccent(c.key)}
-                                aria-label={c.label}
-                                title={c.label}
+                                onClick={() => setAccent(color.key)}
+                                aria-label={color.label}
+                                title={color.label}
                             >
-                                {accent === c.key && <Check size={16} strokeWidth={3} />}
+                                {accent === color.key && <Check size={17} strokeWidth={3} />}
                             </button>
                         ))}
+                        <label
+                            className={`accent-swatch accent-custom-swatch ${customHex ? 'active' : ''}`}
+                            title="自訂任意色碼"
+                            aria-label="自訂任意色碼"
+                        >
+                            <input
+                                type="color"
+                                value={customHex || accentConfig.hex}
+                                onChange={handleCustomColorChange}
+                            />
+                            <span />
+                            {customHex && <Check size={17} strokeWidth={3} />}
+                        </label>
                     </div>
+                    {customHex && (
+                        <p className="accent-feedback">已套用自訂色碼 {customHex}</p>
+                    )}
                 </div>
 
                 <div className="pwa-panel">
@@ -131,10 +157,10 @@ export function SettingsView({
                         </div>
                         <p>
                             {pwa.isStandalone
-                                ? '目前已用 PWA 模式開啟。'
+                                ? '目前已經以 PWA 模式開啟。'
                                 : pwa.canInstall
-                                    ? '此瀏覽器已可安裝，點一下就能加到桌面。'
-                                    : '若看不到安裝提示，請用瀏覽器選單的「加到主畫面」。'}
+                                    ? '此裝置可安裝，之後可以像一般 App 一樣從桌面開啟。'
+                                    : '目前瀏覽器沒有提供安裝提示，可從瀏覽器選單嘗試安裝。'}
                         </p>
                     </div>
                     <button
@@ -163,7 +189,7 @@ export function SettingsView({
                                 min="0"
                                 inputMode="numeric"
                                 value={categoryBudgets[category] || ''}
-                                placeholder="不限制"
+                                placeholder="未設定"
                                 onChange={(event) => setCategoryBudget(category, event.target.value)}
                             />
                         </label>
@@ -213,12 +239,12 @@ export function SettingsView({
                         max="31"
                         value={ruleDay}
                         onChange={(event) => setRuleDay(event.target.value)}
-                        aria-label="每月幾號"
+                        aria-label="每月日期"
                     />
                     <input
                         type="text"
                         value={ruleNote}
-                        placeholder="名稱，例如 Netflix / 房租"
+                        placeholder="備註，例如 Netflix / 房租"
                         onChange={(event) => setRuleNote(event.target.value)}
                     />
                     <button type="submit" className="add-recurring-btn">
@@ -229,7 +255,7 @@ export function SettingsView({
 
                 <div className="recurring-list">
                     {recurringRules.length === 0 ? (
-                        <p className="settings-empty">還沒有固定交易。可以先新增房租、薪水或訂閱費。</p>
+                        <p className="settings-empty">還沒有固定交易，可新增房租、訂閱或薪水。</p>
                     ) : (
                         recurringRules.map((rule) => (
                             <div key={rule.id} className={`recurring-row ${rule.enabled ? '' : 'disabled'}`}>
@@ -244,7 +270,7 @@ export function SettingsView({
                                         type="button"
                                         onClick={() => updateRecurringRule(rule.id, { enabled: !rule.enabled })}
                                     >
-                                        {rule.enabled ? '啟用中' : '已停用'}
+                                        {rule.enabled ? '停用' : '啟用'}
                                     </button>
                                     <button type="button" onClick={() => onPostRecurring(rule)}>
                                         記入本月
@@ -253,7 +279,7 @@ export function SettingsView({
                                         type="button"
                                         className="danger"
                                         onClick={() => {
-                                            if (window.confirm('確定刪除此固定交易？')) deleteRecurringRule(rule.id);
+                                            if (window.confirm('確定刪除這筆固定交易？')) deleteRecurringRule(rule.id);
                                         }}
                                         title="刪除固定交易"
                                     >

@@ -7,6 +7,8 @@
   --accent-secondary: #8b5cf6;
   --accent-rgb: 59, 130, 246;
   --accent-secondary-rgb: 139, 92, 246;
+  --primary-hover: #1f66da;
+  --primary-hover-rgb: 31, 102, 218;
   --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   --bg-glow-1: rgba(59, 130, 246, 0.15);
   --bg-glow-2: rgba(139, 92, 246, 0.15);
@@ -138,6 +140,11 @@ body {
   background: var(--accent-color);
 }
 
+.toolbar-btn.active:hover {
+  background: var(--primary-hover);
+  color: white;
+}
+
 .install-toolbar-btn {
   color: var(--income-color);
 }
@@ -203,6 +210,66 @@ body {
 .undo-toast button {
   color: #93c5fd;
   font-weight: 800;
+}
+
+.version-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(4.8rem + env(safe-area-inset-bottom));
+  z-index: 210;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: min(92vw, 420px);
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.94);
+  color: white;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.version-toast-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.version-toast strong,
+.version-toast span {
+  display: block;
+}
+
+.version-toast strong {
+  font-size: 0.94rem;
+}
+
+.version-toast span {
+  margin-top: 0.18rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+}
+
+.version-toast button {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.7rem;
+  font-weight: 800;
+}
+
+.version-toast .update-now-btn {
+  background: var(--accent-color);
+  color: white;
+}
+
+.version-toast .update-now-btn:hover {
+  background: var(--primary-hover);
+}
+
+.version-toast .update-later-btn {
+  color: rgba(255, 255, 255, 0.76);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 420px) {
