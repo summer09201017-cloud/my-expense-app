@@ -151,25 +151,26 @@ export function Dashboard({
                     )}
                 </div>
 
+                <div id="budgetStatus" className="budget-status-row">
+                    <div className={`budget-bar ${warningLevel}`}>
+                        <div
+                            className="budget-bar-fill"
+                            style={{ width: `${Math.min(percent, 100)}%` }}
+                        />
+                    </div>
+                    <span
+                        id="budgetSprite"
+                        className={`budget-sprite ${warningLevel}`}
+                        role="img"
+                        aria-label={`預算小精靈：${budgetSpriteLabel}`}
+                        title={`預算小精靈：${budgetSpriteLabel}`}
+                    >
+                        {budgetSprite}
+                    </span>
+                </div>
+
                 {budget > 0 && (
                     <>
-                        <div id="budgetStatus" className="budget-status-row">
-                            <div className={`budget-bar ${warningLevel}`}>
-                                <div
-                                    className="budget-bar-fill"
-                                    style={{ width: `${Math.min(percent, 100)}%` }}
-                                />
-                            </div>
-                            <span
-                                id="budgetSprite"
-                                className={`budget-sprite ${warningLevel}`}
-                                role="img"
-                                aria-label={`預算小精靈：${budgetSpriteLabel}`}
-                                title={`預算小精靈：${budgetSpriteLabel}`}
-                            >
-                                {budgetSprite}
-                            </span>
-                        </div>
                         <div className="budget-meta">
                             <span>{percent}% 已用</span>
                             <span>
